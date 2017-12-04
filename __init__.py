@@ -160,8 +160,8 @@ class Mark1(MycroftSkill):
 
         # color is hex
         try:
-            if color[0] is '#':
-                color = color[1:]
+            if '#' in color:
+                color = color.replace('#', "")
             if len(color) != 6:
                 raise
             (r, g, b) = \
@@ -182,12 +182,14 @@ class Mark1(MycroftSkill):
             Args:
                 message (dict): messagebus message from intent parser
         """
+        self.settings.load_skill_settings()
         _color = self.settings.get('eye color', "")
         rgb = self.parse_to_rgb(_color)
         if rgb is not None:
             correct = self.is_rgb_format_correct(rgb)
+            LOG.info(rgb)
             if correct:
-                self.set_eye_brightness(rgb)
+                self.set_eye_color(rgb=rgb)
             else:
                 self.speak_dialog('error.format')
         else:
