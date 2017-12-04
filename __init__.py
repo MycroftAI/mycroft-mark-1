@@ -146,7 +146,6 @@ class Mark1(MycroftSkill):
 
             returns:
                 (r, g, b) (tuple): rgb from 0 - 255
-
         """
         # color exist in dict
         if color in self.color_dict:
@@ -260,7 +259,6 @@ class Mark1(MycroftSkill):
 
             returns:
                 times (dict): dict with associated (datetime, brightnes)
-
         """
         tz = self.location['timezone']['code']
         lat = self.location['coordinate']['latitude']
@@ -384,7 +382,7 @@ class Mark1(MycroftSkill):
     def set_converse(self, context):
         """ to invoke the converse method
 
-            Args:
+            Args:  
                 context (str): string to set context for converse
         """
         self.should_converse = True
@@ -404,7 +402,7 @@ class Mark1(MycroftSkill):
                 utterances (str): utterances said to mycroft
                 lang (str): languge of utterance (currently not used)
         """
-        utt = utterances[0]
+        utt = utterances[0] 
         if self.converse_context == 'need.color':
             found_color = False
             for color in self.color_dict:
