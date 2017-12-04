@@ -206,6 +206,21 @@ class Mark1(MycroftSkill):
         """
         return int(float(percent)/float(100)*30)
 
+    def parse_brightness(self, brightness):
+        """ parse text for brightness level
+
+            Args:
+                brightness (str): string containing brightness level
+
+            return:
+                (int): brightness level
+        """
+        if '%' in brightness:
+            brightness = brightness.replace("%", "").strip()
+        if 'percent' in brightness:
+            brightness = brightness.replace("percent", "").strip()
+        return int(brightness)
+
     def set_eye_brightness(self, brightness, speak=True):
         """ set eye brightness """
         self.enclosure.eyes_brightness(brightness)
@@ -225,10 +240,8 @@ class Mark1(MycroftSkill):
         self.auto_brightness = False
         if 'brightness' in message.data:
             try:
-                brightness = message.data.get('brightness')
-                if '%' in brightness:
-                    brightness = brightness[:-1].strip()
-                brightness = int(brightness)
+                brightness = self.parse_brightness(
+                                    message.data.get('brightness'))
                 if (0 <= brightness <= 100) is False:
                     raise
                 else:
@@ -419,10 +432,7 @@ class Mark1(MycroftSkill):
                 self.need_custom_dialog('error.')
         elif self.converse_context == 'need.brightness':
             try:
-                brightness = utt.lower()
-                if '%' in brightness:
-                    brightness = brightness.replace("%", "").strip()
-                brightness = int(brightness)
+                brightness = self.parse_brightness(utt.lower())
                 if not (0 <= brightness <= 100):
                     raise
                 else:
