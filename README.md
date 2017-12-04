@@ -2,7 +2,7 @@
 A skill that can control the Mark 1 specific enclosure
 
 ## Description 
-A skill that is specific to the Mark 1 enclosure! Do some fun stuff with the Mark 1 via the [enclosure api] (https://github.com/MycroftAI/mycroft-core/blob/dev/mycroft/client/enclosure/api.py). Pull request and contributions appreciated! Let's do some cool stuff with the Mark 1
+A skill that is specific to the Mark 1 enclosure! Do some fun stuff with the Mark 1 via the [enclosure api](https://github.com/MycroftAI/mycroft-core/blob/dev/mycroft/client/enclosure/api.py). Pull request and contributions appreciated! Let's do some cool stuff with the Mark 1
 
 Features
 * Set the eye color via voice and settings in the web UI 
