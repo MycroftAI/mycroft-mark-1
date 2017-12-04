@@ -47,4 +47,4 @@ Available default colors and RGB values
 Mycroft Inc
 
 ## Require 
-platform_mark1 
+Mark 1 Devices
