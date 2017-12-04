@@ -194,12 +194,25 @@ class Mark1(MycroftSkill):
         else:
             self.speak_dialog('error.format')
 
-    def set_eye_brightness(self, brightness, speak=True):
-        """ set eye brightness
+    def convert_brightness(self, percent):
+        """ converts the brigtness value from percentage to
+             a value arduino can read
+
+            Args:
+                percent (int): interger value from 0 to 100
+
+            return:
+                (int): value form 0 to 30
         """
+        return int(float(percent)/float(100)*30)
+
+    def set_eye_brightness(self, brightness, speak=True):
+        """ set eye brightness """
         self.enclosure.eyes_brightness(brightness)
         if speak is True:
-            self.speak_dialog('brightness.set', data={'val': brightness})
+            brightness = int(float(brightness)*float(100)/float(30))
+            self.speak_dialog(
+                'brightness.set', data={'val': str(brightness)+'%'})
 
     @intent_file_handler('brightness.intent')
     def handle_brightness(self, message):
@@ -212,10 +225,15 @@ class Mark1(MycroftSkill):
         self.auto_brightness = False
         if 'brightness' in message.data:
             try:
-                brightness = int(message.data.get('brightness'))
-                if brightness > 30:
+                brightness = message.data.get('brightness')
+                if '%' in brightness:
+                    brightness = brightness[:-1].strip()
+                brightness = int(brightness)
+                if (0 <= brightness <= 100) is False:
                     raise
-                self.set_eye_brightness(brightness)
+                else:
+                    bright_val = self.convert_brightness(brightness)
+                    self.set_eye_brightness(bright_val)
             except Exception as e:
                 LOG.error(e)
                 self.set_converse('need.brightness')
@@ -401,17 +419,21 @@ class Mark1(MycroftSkill):
                 self.need_custom_dialog('error.')
         elif self.converse_context == 'need.brightness':
             try:
-                brightness = int(utt.lower())
-                self.set_eye_brightness(brightness)
-                self.reset_converse()
-                return True
+                brightness = utt.lower()
+                if '%' in brightness:
+                    brightness = brightness.replace("%", "").strip()
+                brightness = int(brightness)
+                if not (0 <= brightness <= 100):
+                    raise
+                else:
+                    bright_val = self.convert_brightness(brightness)
+                    self.set_eye_brightness(bright_val)
+                    self.reset_converse()
+                    return True
             except Exception as e:
                 LOG.error(e)
                 self.speak_dialog('brightness.error', expect_response=True)
         return self.should_converse
-
-    def stop(self):
-        pass
 
 
 def create_skill():

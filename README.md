@@ -1,50 +1,23 @@
-## Mycroft Mark 1
-A skill that can control the Mark 1 specific enclosure
+## Mycroft Mark 1 settings
+Customize your Mark 1
 
-## Description 
-A skill that is specific to the Mark 1 enclosure! Do some fun stuff with the Mark 1 via the [enclosure api](https://github.com/MycroftAI/mycroft-core/blob/dev/mycroft/client/enclosure/api.py). Pull request and contributions appreciated! Let's do some cool stuff with the Mark 1
+## Description
+The Mycroft Mark 1 has several unique capabilities which this skill lets you to control.
 
-Features
-* Set the eye color via voice and settings in the web UI 
-* Set custom eye color via voice and web UI (accepts values in RGB values)
-* Set brightness of faceplate via voice (value from 0 to 30)
-* Turn on auto brightness for faceplate via voice
+__Eye Color__
+The Mark 1 has beautiful eyes -- and you get to pick their color!  Set them to a named color ("blue", "magenta", "teal", etc) or any color using RGB values.
 
-Available default colors and RGB values
-* 'red': (255, 0, 0)
-* 'green': (0, 128, 0)
-* 'yellow': (255, 255, 0)
-* 'blue': (0, 0, 255)
-* 'orange': (245, 130, 48)
-* 'purple': (128, 0, 128)
-* 'cyan': (0, 255, 255)
-* 'magenta': (255, 0, 255)
-* 'lime': (0, 255, 0)
-* 'pink': (250, 190, 190)
-* 'teal': (0, 128, 128)
-* 'lavendar': (230, 190, 255)
-* 'brown': (170, 110, 40)
-* 'beige': (255, 250, 200)
-* 'maroon': (128, 0, 0)
-* 'mint': (170, 255, 195)
-* 'olive': (128, 128, 0)
-* 'coral': (255, 215, 180)
-* 'navy': (0, 0, 128)
-* 'grey': (128, 128, 128)
-* 'gray': (128, 128, 128)
-* 'white': (255, 255, 255)
-* 'black': (0, 0, 0)
-* 'default': (34, 167, 240)  # mycroft blue
+__Faceplate Brightness__
+Set the faceplate to a specific brightness, or allow it to automatically adjust its brightness level to dim at night.
 
+## Examples
+* "Set eye color to pink"
+* "Set a custom eye color" (you'll be prompted for values)
+* "Turn on auto brightness"
+* "Set brightness to 75 percent"
 
-## Examples 
-* "Hey Mycroft, set eye color to red"
-* "Hey Mycroft, set a custom eye color"
-* "Hey Mycroft, set brightness to 25"
-* "Hey Mycroft, turn on auto brightness"
-
-## Credits 
+## Credits
 Mycroft Inc
 
-## Require 
+## Require
 Mark 1 Devices
