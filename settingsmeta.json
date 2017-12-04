@@ -1,0 +1,23 @@
+{
+    "name": "Mark 1 Skill",
+    "skillMetadata": {
+        "sections": [
+            {
+                "name": "R G B",
+                "fields": [
+                    {
+                        "type": "label",
+                        "label": "format for eye color can be in: <ul><li>RGB: (34, 167, 240)</li><li>HEX: #019FDE</li><li>Color: Green</li></ul>please see the README.md for available color choices"
+                    },
+                    {
+                        "name": "eye color",
+                        "type": "text",
+                        "label": "Eye Color",
+                        "placeholder": "e.g. (34, 167, 240)",
+                        "value": ""
+                    }
+                ]
+            }
+        ]
+    }
+}
