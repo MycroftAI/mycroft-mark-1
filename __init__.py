@@ -113,6 +113,7 @@ class Mark1(MycroftSkill):
             color = message.data.get('color', None)
             if color is not None:
                 self.set_eye_color(color=color)
+                self.settings['eye color'] = color
             else:
                 self.set_converse('need.color')
                 self.speak_dialog(
@@ -384,7 +385,7 @@ class Mark1(MycroftSkill):
     def set_converse(self, context):
         """ to invoke the converse method
 
-            Args:  
+            Args:
                 context (str): string to set context for converse
         """
         self.should_converse = True
@@ -404,7 +405,7 @@ class Mark1(MycroftSkill):
                 utterances (str): utterances said to mycroft
                 lang (str): languge of utterance (currently not used)
         """
-        utt = utterances[0] 
+        utt = utterances[0]
         if self.converse_context == 'need.color':
             found_color = False
             for color in self.color_dict:
@@ -423,6 +424,7 @@ class Mark1(MycroftSkill):
                     self.need_custom_dialog()
                     if len(self.custom_rgb) == 3:
                         self.set_eye_color(rgb=self.custom_rgb)
+                        self.settings['eye color'] = self.custom_rgb
                         self.reset_converse()
                     return True
                 else:
