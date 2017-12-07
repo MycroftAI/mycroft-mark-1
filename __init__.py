@@ -183,7 +183,7 @@ class Mark1(MycroftSkill):
             Args:
                 message (dict): messagebus message from intent parser
         """
-        self.settings.load_skill_settings()
+        self.settings.update_remote()
         _color = self.settings.get('eye color', "")
         rgb = self.parse_to_rgb(_color)
         if rgb is not None:
