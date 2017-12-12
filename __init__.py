@@ -81,7 +81,10 @@ class Mark1(MycroftSkill):
         elif rgb is not None:
                 (r, g, b) = rgb
                 self.enclosure.eyes_color(r, g, b)
-        self._current_color = (r, g, b)
+        try:
+            self._current_color = (r, g, b)
+        except:
+            self.speak_dialog('error.set.color')
         if speak is True:
             self.speak_dialog('set.color.success')
 
@@ -102,6 +105,13 @@ class Mark1(MycroftSkill):
             data={'color': 'red'},
             expect_response=True)
 
+    def parse_color_from_string(self, string):
+        """ parses the color from string """
+        for color in self.color_dict.keys():
+            if color in string:
+                return color
+        return None
+
     @intent_file_handler('eye.color.intent')
     def handle_eye_color(self, message):
         """ Callback to set eye color from list
@@ -110,7 +120,8 @@ class Mark1(MycroftSkill):
                 message (dict): messagebus message from intent parser
         """
         if 'color' in message.data:
-            color = message.data.get('color', None)
+            color_string = message.data.get('color', None)
+            color = self.parse_color_from_string(color_string)
             if color is not None:
                 self.set_eye_color(color=color)
                 self.settings['eye color'] = color

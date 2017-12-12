@@ -1,4 +1,4 @@
-change the eye color to {color}
-set eye color to {color}
-have eye color be {color}
-change eye to {color}
+change the eye color to (the |){color}
+set eye color to (the |){color}
+have eye color be (the |){color}
+change eye to (the |){color}
