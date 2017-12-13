@@ -106,7 +106,7 @@ class Mark1(MycroftSkill):
                 self.enclosure.eyes_color(r, g, b)
         try:
             self._current_color = (r, g, b)
-            if speak is True:
+            if speak and not initing:
                 self.speak_dialog('set.color.success')
         except:
             self.log.debug('Bad color code: '+str(color))
