@@ -16,6 +16,7 @@ import astral
 import time
 import arrow
 from mycroft.skills.core import MycroftSkill
+from mycroft.util import connected
 from mycroft.util.log import LOG
 from mycroft.audio import wait_while_speaking
 from mycroft import intent_file_handler
@@ -62,9 +63,28 @@ class Mark1(MycroftSkill):
         }
 
     def initialize(self):
-        self.register_entity_file('color.entity')
+        try:
+            self.add_event('mycroft.internet.connected',
+                           self.handle_internet_connected)
+        except:
+            pass
+	self.register_entity_file('color.entity')
         if self.settings.get('auto_brightness') is None:
             self.settings['auto_brightness'] = False
+
+        if not self.settings['eye color']:
+            self.settings['eye color'] = 'default'
+        if connected:
+            self.log.info("Connected at startup: setting eye color")
+            self.enclosure.mouth_reset()
+            self.set_eye_color(self.settings['eye color'], speak=False)
+        else:
+            self.log.info("Not connected, leaving eyes yellow")
+
+    def handle_internet_connected(self, message):
+        self.log.info("Connected later")
+        self.enclosure.mouth_reset()
+        self.set_eye_color(self.settings['eye color'], speak=False)
 
     def set_eye_color(self, color=None, rgb=None, speak=True):
         """ function to set eye color
@@ -83,10 +103,13 @@ class Mark1(MycroftSkill):
                 self.enclosure.eyes_color(r, g, b)
         try:
             self._current_color = (r, g, b)
+            if speak is True:
+                self.speak_dialog('set.color.success')
         except:
-            self.speak_dialog('error.set.color')
-        if speak is True:
-            self.speak_dialog('set.color.success')
+            self.log.debug('Bad color code: '+str(color))
+            if speak:
+                self.speak_dialog('error.set.color')
+            self.enclosure.eyes_color(34, 167, 240)  # mycroft blue
 
     @intent_file_handler('custom.eye.color.intent')
     def handle_custom_eye_color(self, message):
