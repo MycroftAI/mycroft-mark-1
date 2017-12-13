@@ -63,30 +63,33 @@ class Mark1(MycroftSkill):
         }
 
     def initialize(self):
+        # Initialize...
+        if self.settings.get('auto_brightness') is None:
+            self.settings['auto_brightness'] = False
+        if self.settings.get('eye color') is None:
+            self.settings['eye color'] = "default"
+
+        # Handle changing the eye color once Mark 1 is ready to go
+        # (Part of the statup sequence)
         try:
             self.add_event('mycroft.internet.connected',
                            self.handle_internet_connected)
         except:
             pass
-	self.register_entity_file('color.entity')
-        if self.settings.get('auto_brightness') is None:
-            self.settings['auto_brightness'] = False
 
-        if not self.settings['eye color']:
-            self.settings['eye color'] = 'default'
+	self.register_entity_file('color.entity')
+
         if connected:
-            self.log.info("Connected at startup: setting eye color")
+            # Connected at startup: setting eye color
             self.enclosure.mouth_reset()
-            self.set_eye_color(self.settings['eye color'], speak=False)
-        else:
-            self.log.info("Not connected, leaving eyes yellow")
+            self.set_eye_color(self.settings['eye color'], initing=True)
 
     def handle_internet_connected(self, message):
-        self.log.info("Connected later")
+        # System came online later after booting
         self.enclosure.mouth_reset()
         self.set_eye_color(self.settings['eye color'], speak=False)
 
-    def set_eye_color(self, color=None, rgb=None, speak=True):
+    def set_eye_color(self, color=None, rgb=None, speak=True, initing=False):
         """ function to set eye color
 
             Args:
@@ -107,9 +110,10 @@ class Mark1(MycroftSkill):
                 self.speak_dialog('set.color.success')
         except:
             self.log.debug('Bad color code: '+str(color))
-            if speak:
+            if speak and not initing:
                 self.speak_dialog('error.set.color')
-            self.enclosure.eyes_color(34, 167, 240)  # mycroft blue
+            if initing:
+                self.enclosure.eyes_color(34, 167, 240)  # mycroft blue
 
     @intent_file_handler('custom.eye.color.intent')
     def handle_custom_eye_color(self, message):
