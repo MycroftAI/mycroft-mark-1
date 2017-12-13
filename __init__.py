@@ -79,7 +79,7 @@ class Mark1(MycroftSkill):
 
 	self.register_entity_file('color.entity')
 
-        if connected:
+        if connected():
             # Connected at startup: setting eye color
             self.enclosure.mouth_reset()
             self.set_eye_color(self.settings['eye color'], initing=True)
