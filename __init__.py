@@ -15,7 +15,6 @@
 import astral
 import time
 import arrow
-import csv
 from mycroft.skills.core import MycroftSkill
 from mycroft.util import connected
 from mycroft.util.log import LOG
@@ -86,22 +85,18 @@ class Mark1(MycroftSkill):
         if not name.endswith(".value"):
             name += ".value"
 
-        try:
-            with open(join(self.root_dir, 'dialog', self.lang, name)) as f:
-                reader = csv.reader(f, delimiter=delim)
-                for row in reader:
-                    # skip comment lines
-                    if not row or row[0].startswith("#"):
-                        continue
-                    if len(row) != 2:
-                        continue
+        with open(join(self.root_dir, 'dialog', self.lang, name)) as f:
+            reader = csv.reader(f, delimiter=delim)
+            for row in reader:
+                # skip comment lines
+                if not row or row[0].startswith("#"):
+                    continue
+                if len(row) != 2:
+                    continue
 
-                    result[row[0]] = row[1]
+                result[row[0]] = row[1]
 
-            return result
-        except Exception as e:
-            LOG.info(e)
-            return {}
+        return result
 
     def set_eye_color(self, color=None, rgb=None, speak=True, initing=False):
         """ function to set eye color
