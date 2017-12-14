@@ -26,7 +26,7 @@ from pytz import timezone
 from datetime import datetime
 
 
-def hex_to_rgb(self, hex):
+def hex_to_rgb(hex):
     """ turns hex into rgb
 
         Args:
