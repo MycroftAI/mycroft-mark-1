@@ -33,7 +33,7 @@ class Mark1(MycroftSkill):
         self._settings_loaded = False
         self.converse_context = None
         self.custom_rgb = []
-        self.color_dict = self.translate_namedvalues('color.list')
+        self.color_dict = self.translate_namedvalues('colors')
         LOG.info(self.color_dict)
 
     def initialize(self):
