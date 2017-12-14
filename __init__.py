@@ -334,8 +334,10 @@ class Mark1(MycroftSkill):
                 response = self.get_response('brightness.not.found')
                 LOG.info(reponse)
         else:
-            self.set_converse('need.brightness')
-            self.speak_dialog('brightness.not.found', expect_response=True)
+            # self.set_converse('need.brightness')
+            # self.speak_dialog('brightness.not.found', expect_response=True)
+            response = self.get_response('brightness.not.found')
+            LOG.info(reponse)
 
     def _get_auto_time(self):
         """ get dawn, sunrise, noon, sunset, and dusk time
