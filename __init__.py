@@ -33,34 +33,8 @@ class Mark1(MycroftSkill):
         self._settings_loaded = False
         self.converse_context = None
         self.custom_rgb = []
-
-        # colors in (r, g, b)
-        self.color_dict = {
-            'red': (255, 0, 0),
-            'green': (0, 128, 0),
-            'yellow': (255, 255, 0),
-            'blue': (0, 0, 255),
-            'orange': (245, 130, 48),
-            'purple': (128, 0, 128),
-            'cyan': (0, 255, 255),
-            'magenta': (255, 0, 255),
-            'lime': (0, 255, 0),
-            'pink': (250, 190, 190),
-            'teal': (0, 128, 128),
-            'lavendar': (230, 190, 255),
-            'brown': (170, 110, 40),
-            'beige': (255, 250, 200),
-            'maroon': (128, 0, 0),
-            'mint': (170, 255, 195),
-            'olive': (128, 128, 0),
-            'coral': (255, 215, 180),
-            'navy': (0, 0, 128),
-            'grey': (128, 128, 128),
-            'gray': (128, 128, 128),
-            'white': (255, 255, 255),
-            'black': (0, 0, 0),
-            'default': (34, 167, 240)  # mycroft blue
-        }
+        self.color_dict = self.translate_namedvalues('color.list')
+        print(slelf.color_dict)
 
     def initialize(self):
         # Initialize...
@@ -77,7 +51,7 @@ class Mark1(MycroftSkill):
         except:
             pass
 
-	self.register_entity_file('color.entity')
+        self.register_entity_file('color.entity')
 
         if connected():
             # Connected at startup: setting eye color
@@ -88,6 +62,44 @@ class Mark1(MycroftSkill):
         # System came online later after booting
         self.enclosure.mouth_reset()
         self.set_eye_color(self.settings['eye color'], speak=False)
+
+    # TODO: Move in to MycroftSkill
+    def translate_namedvalues(self, name, delim=None):
+        """
+        Load translation dict containing names and values.
+        This loads a simple CSV from the 'dialog' folders.
+        The name is the first list item, the value is the
+        second.  Lines prefixed with # or // get ignored
+
+        Args:
+            name (str): name of the .value file, no extension needed
+            delim (char): delimiter character used, default is ','
+        Returns:
+            dict: name and value dictionary, or [] if load fails
+        """
+        import csv
+        from os.path import join
+
+        delim = delim or ','
+        result = {}
+        if not name.endswith(".value"):
+            name += ".value"
+
+        try:
+            with open(join(self.root_dir, 'dialog', self.lang, name)) as f:
+                reader = csv.reader(f, delimiter=delim)
+                for row in reader:
+                    # skip comment lines
+                    if not row or row[0].startswith("#"):
+                        continue
+                    if len(row) != 2:
+                        continue
+
+                    result[row[0]] = row[1]
+
+            return result
+        except:
+            return {}
 
     def set_eye_color(self, color=None, rgb=None, speak=True, initing=False):
         """ function to set eye color
