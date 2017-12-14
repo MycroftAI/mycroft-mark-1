@@ -99,7 +99,8 @@ class Mark1(MycroftSkill):
                     result[row[0]] = row[1]
 
             return result
-        except:
+        except Exception as e:
+            LOG.info(e)
             return {}
 
     def set_eye_color(self, color=None, rgb=None, speak=True, initing=False):
