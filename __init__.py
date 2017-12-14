@@ -226,9 +226,9 @@ class Mark1(MycroftSkill):
                 (r, g, b) (tuple): rgb from 0 - 255
         """
         # color exist in dict
-        if color.lower() in self.color_dict:
+        color = color.lower()
+        if color in self.color_dict:
             return hex_to_rgb(self.color_dict[color])
-
         # color is rgb
         try:
             (r, g, b) = parse_tuple(color)
