@@ -262,7 +262,7 @@ class Mark1(MycroftSkill):
         """
         self.settings.update_remote()
         _color = self.settings.get('eye color', "")
-        LOG.info(color)
+        LOG.info(_color)
         rgb = self.parse_to_rgb(_color)
         if rgb is not None:
             correct = self.is_rgb_format_correct(rgb)
