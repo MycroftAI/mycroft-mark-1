@@ -26,6 +26,27 @@ from pytz import timezone
 from datetime import datetime
 
 
+def hex_to_rgb(self, hex):
+    """ turns hex into rgb
+
+        Args:
+            hex (str): hex i.e #ff12ff
+        Returns:
+            (rgb): tuple i.e (123, 200, 155)
+    """
+    try:
+        if '#' in color:
+            color = color.replace('#', "")
+        if len(color) != 6:
+            raise
+        (r, g, b) = \
+            int(color[0:2], 16), int(color[2:4], 16), int(color[4:6], 16)
+        return (r, g, b)
+    except:
+        LOG.info('Hex format is incorrect')
+        return None
+
+
 class Mark1(MycroftSkill):
     def __init__(self):
         super(Mark1, self).__init__("Mark1")
@@ -40,6 +61,7 @@ class Mark1(MycroftSkill):
             self.settings['auto_brightness'] = False
         if self.settings.get('eye color') is None:
             self.settings['eye color'] = "default"
+
         self.color_dict = self.translate_namedvalues('colors')
         LOG.info(self.color_dict)
 
@@ -85,18 +107,22 @@ class Mark1(MycroftSkill):
         if not name.endswith(".value"):
             name += ".value"
 
-        with open(join(self.root_dir, 'dialog', self.lang, name)) as f:
-            reader = csv.reader(f, delimiter=delim)
-            for row in reader:
-                # skip comment lines
-                if not row or row[0].startswith("#"):
-                    continue
-                if len(row) != 2:
-                    continue
+        try:
+            with open(join(self.root_dir, 'dialog', self.lang, name)) as f:
+                reader = csv.reader(f, delimiter=delim)
+                for row in reader:
+                    # skip comment lines
+                    if not row or row[0].startswith("#"):
+                        continue
+                    if len(row) != 2:
+                        continue
 
-                result[row[0]] = row[1]
+                    result[row[0]] = row[1]
 
-        return result
+            return result
+        except Exception as e:
+            LOG.info(e)
+            return {}
 
     def set_eye_color(self, color=None, rgb=None, speak=True, initing=False):
         """ function to set eye color
@@ -106,7 +132,7 @@ class Mark1(MycroftSkill):
                 speak (bool): to have success speak on change
         """
         if color is not None:
-            color_rgb = self.color_dict.get(color, None)
+            color_rgb = hex_to_rgb(self.color_dict.get(color, None))
             if color_rgb is not None:
                 (r, g, b) = color_rgb
                 self.enclosure.eyes_color(r, g, b)
@@ -197,7 +223,7 @@ class Mark1(MycroftSkill):
         """
         # color exist in dict
         if color in self.color_dict:
-            return self.color_dict[color]
+            return hex_to_rgb(self.color_dict[color])
 
         # color is rgb
         try:
