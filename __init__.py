@@ -323,6 +323,15 @@ class Mark1(MycroftSkill):
         except:
             return False
 
+    def set_brightness_converse(self):
+        """ setoff converse method for brightness """
+        response = self.get_response(
+                    'brightness.not.found',
+                    validator=self.brightness_validator,
+                    num_retries=2)
+        if response is not None:
+            self.set_eye_brightness(response)
+
     @intent_file_handler('brightness.intent')
     def handle_brightness(self, message):
         """ Intent Callback to set custom eye colors in rgb
@@ -343,19 +352,9 @@ class Mark1(MycroftSkill):
                     self.set_eye_brightness(bright_val)
             except Exception as e:
                 LOG.error(e)
-                # self.set_converse('need.brightness')
-                # self.speak_dialog('brightness.not.found', expect_response=True)
-                response = self.get_response('brightness.not.found')
-                LOG.info(response)
+                self.set_brightness_converse()
         else:
-            # self.set_converse('need.brightness')
-            # self.speak_dialog('brightness.not.found', expect_response=True)
-            response = self.get_response(
-                                'brightness.not.found',
-                                validator=self.brightness_validator,
-                                num_retries=2)
-            if response is not None:
-                self.set_eye_brightness(response)
+            self.set_brightness_converse()
 
     def _get_auto_time(self):
         """ get dawn, sunrise, noon, sunset, and dusk time
@@ -496,57 +495,57 @@ class Mark1(MycroftSkill):
         self.should_converse = False
         self.converse_context = None
 
-    def converse(self, utterances, lang='en-us'):
-        """ overrides MycroftSkill converse method. when return value is True,
-            any utterances after will be sent through the conveerse method
-            to be handled.
+    # def converse(self, utterances, lang='en-us'):
+    #     """ overrides MycroftSkill converse method. when return value is True,
+    #         any utterances after will be sent through the conveerse method
+    #         to be handled.
 
-            Args:
-                utterances (str): utterances said to mycroft
-                lang (str): languge of utterance (currently not used)
-        """
-        utt = utterances[0]
-        if self.converse_context == 'need.color':
-            found_color = False
-            for color in self.color_dict:
-                if color in utt.lower():
-                    self.set_eye_color(color=color)
-                    found_color = True
-            if found_color is False:
-                self.speak_dialog('color.not.found')
-            self.reset_converse()
-            return True
-        elif self.converse_context == 'set.custom.color':
-            try:
-                value = int(utt)
-                if 0 <= value <= 255:
-                    self.custom_rgb.append(value)
-                    self.need_custom_dialog()
-                    if len(self.custom_rgb) == 3:
-                        self.set_eye_color(rgb=self.custom_rgb)
-                        self.settings['eye color'] = self.custom_rgb
-                        self.reset_converse()
-                    return True
-                else:
-                    raise
-            except Exception as e:
-                LOG.error(e)
-                self.need_custom_dialog('error.')
-        # elif self.converse_context == 'need.brightness':
-        #     try:
-        #         brightness = self.parse_brightness(utt.lower())
-        #         if not (0 <= brightness <= 100):
-        #             raise
-        #         else:
-        #             bright_val = self.convert_brightness(brightness)
-        #             self.set_eye_brightness(bright_val)
-        #             self.reset_converse()
-        #             return True
-        #     except Exception as e:
-        #         LOG.error(e)
-        #         self.speak_dialog('brightness.error', expect_response=True)
-        #         self.reset_converse()
-        return self.should_converse
+    #         Args:
+    #             utterances (str): utterances said to mycroft
+    #             lang (str): languge of utterance (currently not used)
+    #     """
+    #     utt = utterances[0]
+    #     if self.converse_context == 'need.color':
+    #         found_color = False
+    #         for color in self.color_dict:
+    #             if color in utt.lower():
+    #                 self.set_eye_color(color=color)
+    #                 found_color = True
+    #         if found_color is False:
+    #             self.speak_dialog('color.not.found')
+    #         self.reset_converse()
+    #         return True
+    #     elif self.converse_context == 'set.custom.color':
+    #         try:
+    #             value = int(utt)
+    #             if 0 <= value <= 255:
+    #                 self.custom_rgb.append(value)
+    #                 self.need_custom_dialog()
+    #                 if len(self.custom_rgb) == 3:
+    #                     self.set_eye_color(rgb=self.custom_rgb)
+    #                     self.settings['eye color'] = self.custom_rgb
+    #                     self.reset_converse()
+    #                 return True
+    #             else:
+    #                 raise
+    #         except Exception as e:
+    #             LOG.error(e)
+    #             self.need_custom_dialog('error.')
+    #     # elif self.converse_context == 'need.brightness':
+    #     #     try:
+    #     #         brightness = self.parse_brightness(utt.lower())
+    #     #         if not (0 <= brightness <= 100):
+    #     #             raise
+    #     #         else:
+    #     #             bright_val = self.convert_brightness(brightness)
+    #     #             self.set_eye_brightness(bright_val)
+    #     #             self.reset_converse()
+    #     #             return True
+    #     #     except Exception as e:
+    #     #         LOG.error(e)
+    #     #         self.speak_dialog('brightness.error', expect_response=True)
+    #     #         self.reset_converse()
+    #     return self.should_converse
 
 
 def create_skill():
