@@ -309,6 +309,20 @@ class Mark1(MycroftSkill):
             self.speak_dialog(
                 'brightness.set', data={'val': str(brightness)+'%'})
 
+    def brightness_validator(self, brightness):
+        """ validate brightness is int or between 0 to 100
+            Args:
+                brightness (int): integer of brightness
+            Returns:
+                bool
+        """
+        try:
+            if (0 <= int(brightness) <= 100) is False:
+                raise
+            return True
+        except:
+            return False
+
     @intent_file_handler('brightness.intent')
     def handle_brightness(self, message):
         """ Intent Callback to set custom eye colors in rgb
@@ -336,8 +350,12 @@ class Mark1(MycroftSkill):
         else:
             # self.set_converse('need.brightness')
             # self.speak_dialog('brightness.not.found', expect_response=True)
-            response = self.get_response('brightness.not.found')
-            LOG.info(response)
+            response = self.get_response(
+                                'brightness.not.found',
+                                validator=self.brightness_validator,
+                                num_retries=2)
+            if response is not None:
+                self.set_eye_brightness(response)
 
     def _get_auto_time(self):
         """ get dawn, sunrise, noon, sunset, and dusk time
