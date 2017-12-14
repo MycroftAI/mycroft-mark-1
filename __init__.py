@@ -33,7 +33,6 @@ class Mark1(MycroftSkill):
         self._settings_loaded = False
         self.converse_context = None
         self.custom_rgb = []
-        self.color_dict = self.translate_namedvalues('colors')
         LOG.info(self.color_dict)
 
     def initialize(self):
@@ -42,6 +41,7 @@ class Mark1(MycroftSkill):
             self.settings['auto_brightness'] = False
         if self.settings.get('eye color') is None:
             self.settings['eye color'] = "default"
+        self.color_dict = self.translate_namedvalues('colors')
 
         # Handle changing the eye color once Mark 1 is ready to go
         # (Part of the statup sequence)
