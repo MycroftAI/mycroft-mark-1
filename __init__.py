@@ -15,6 +15,7 @@
 import astral
 import time
 import arrow
+import csv
 from mycroft.skills.core import MycroftSkill
 from mycroft.util import connected
 from mycroft.util.log import LOG
@@ -89,7 +90,6 @@ class Mark1(MycroftSkill):
             with open(join(self.root_dir, 'dialog', self.lang, name)) as f:
                 reader = csv.reader(f, delimiter=delim)
                 for row in reader:
-                    LOG.info(row)
                     # skip comment lines
                     if not row or row[0].startswith("#"):
                         continue
