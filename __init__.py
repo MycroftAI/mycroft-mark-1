@@ -523,6 +523,7 @@ class Mark1(MycroftSkill):
             except Exception as e:
                 LOG.error(e)
                 self.speak_dialog('brightness.error', expect_response=True)
+                self.reset_converse()
         return self.should_converse
 
 
