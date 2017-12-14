@@ -34,7 +34,7 @@ class Mark1(MycroftSkill):
         self.converse_context = None
         self.custom_rgb = []
         self.color_dict = self.translate_namedvalues('color.list')
-        print(slelf.color_dict)
+        print(self.color_dict)
 
     def initialize(self):
         # Initialize...
