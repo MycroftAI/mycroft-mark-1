@@ -37,7 +37,7 @@ def hex_to_rgb(_hex):
     try:
         LOG.info(_hex)
         if '#' in _hex:
-            _hex = _hex.replace('#', "")
+            _hex = _hex.replace('#', "").strip()
         LOG.info(_hex)
         if len(_hex) != 6:
             raise
