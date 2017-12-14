@@ -35,6 +35,7 @@ def hex_to_rgb(hex):
             (rgb): tuple i.e (123, 200, 155)
     """
     try:
+        LOG.info(hex)
         if '#' in color:
             color = color.replace('#', "")
         if len(color) != 6:
@@ -42,7 +43,8 @@ def hex_to_rgb(hex):
         (r, g, b) = \
             int(color[0:2], 16), int(color[2:4], 16), int(color[4:6], 16)
         return (r, g, b)
-    except:
+    except Exception as e:
+        LOG.info(e)
         LOG.info('Hex format is incorrect')
         return None
 
