@@ -226,7 +226,7 @@ class Mark1(MycroftSkill):
                 (r, g, b) (tuple): rgb from 0 - 255
         """
         # color exist in dict
-        if color in self.color_dict:
+        if color.lower() in self.color_dict:
             return hex_to_rgb(self.color_dict[color])
 
         # color is rgb
@@ -262,6 +262,7 @@ class Mark1(MycroftSkill):
         """
         self.settings.update_remote()
         _color = self.settings.get('eye color', "")
+        LOG.info(color)
         rgb = self.parse_to_rgb(_color)
         if rgb is not None:
             correct = self.is_rgb_format_correct(rgb)
