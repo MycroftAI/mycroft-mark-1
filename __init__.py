@@ -36,8 +36,9 @@ def hex_to_rgb(_hex):
     """
     try:
         LOG.info(_hex)
-        if '#' in str(_hex):
+        if '#' in _hex:
             _hex = _hex.replace('#', "")
+        LOG.info(_hex)
         if len(_hex) != 6:
             raise
         LOG.info(_hex)
