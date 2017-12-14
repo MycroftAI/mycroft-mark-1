@@ -26,7 +26,7 @@ from pytz import timezone
 from datetime import datetime
 
 
-def hex_to_rgb(hex):
+def hex_to_rgb(_hex):
     """ turns hex into rgb
 
         Args:
@@ -35,9 +35,9 @@ def hex_to_rgb(hex):
             (rgb): tuple i.e (123, 200, 155)
     """
     try:
-        LOG.info(hex)
-        if '#' in color:
-            color = color.replace('#', "")
+        LOG.info(_hex)
+        if '#' in _hex:
+            _hex = _hex.replace('#', "")
         if len(color) != 6:
             raise
         (r, g, b) = \
