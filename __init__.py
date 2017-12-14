@@ -331,7 +331,8 @@ class Mark1(MycroftSkill):
                     validator=self.brightness_validator,
                     num_retries=2)
         if response is not None:
-            self.set_eye_brightness(response)
+            braight_val = self.convert_brightness(response)
+            self.set_eye_brightness(braight_val)
 
     @intent_file_handler('brightness.intent')
     def handle_brightness(self, message):
