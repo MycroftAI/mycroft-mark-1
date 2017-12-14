@@ -40,6 +40,7 @@ def hex_to_rgb(_hex):
             _hex = _hex.replace('#', "")
         if len(_hex) != 6:
             raise
+        LOG.info(_hex)
         (r, g, b) = \
             int(_hex[0:2], 16), int(_hex[2:4], 16), int(_hex[4:6], 16)
         return (r, g, b)
