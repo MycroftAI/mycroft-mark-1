@@ -329,8 +329,10 @@ class Mark1(MycroftSkill):
                     self.set_eye_brightness(bright_val)
             except Exception as e:
                 LOG.error(e)
-                self.set_converse('need.brightness')
-                self.speak_dialog('brightness.not.found', expect_response=True)
+                # self.set_converse('need.brightness')
+                # self.speak_dialog('brightness.not.found', expect_response=True)
+                response = self.get_response('brightness.not.found')
+                LOG.info(reponse)
         else:
             self.set_converse('need.brightness')
             self.speak_dialog('brightness.not.found', expect_response=True)
@@ -510,20 +512,20 @@ class Mark1(MycroftSkill):
             except Exception as e:
                 LOG.error(e)
                 self.need_custom_dialog('error.')
-        elif self.converse_context == 'need.brightness':
-            try:
-                brightness = self.parse_brightness(utt.lower())
-                if not (0 <= brightness <= 100):
-                    raise
-                else:
-                    bright_val = self.convert_brightness(brightness)
-                    self.set_eye_brightness(bright_val)
-                    self.reset_converse()
-                    return True
-            except Exception as e:
-                LOG.error(e)
-                self.speak_dialog('brightness.error', expect_response=True)
-                self.reset_converse()
+        # elif self.converse_context == 'need.brightness':
+        #     try:
+        #         brightness = self.parse_brightness(utt.lower())
+        #         if not (0 <= brightness <= 100):
+        #             raise
+        #         else:
+        #             bright_val = self.convert_brightness(brightness)
+        #             self.set_eye_brightness(bright_val)
+        #             self.reset_converse()
+        #             return True
+        #     except Exception as e:
+        #         LOG.error(e)
+        #         self.speak_dialog('brightness.error', expect_response=True)
+        #         self.reset_converse()
         return self.should_converse
 
 
