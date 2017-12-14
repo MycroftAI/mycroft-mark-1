@@ -38,10 +38,10 @@ def hex_to_rgb(_hex):
         LOG.info(_hex)
         if '#' in _hex:
             _hex = _hex.replace('#', "")
-        if len(color) != 6:
+        if len(_hex) != 6:
             raise
         (r, g, b) = \
-            int(color[0:2], 16), int(color[2:4], 16), int(color[4:6], 16)
+            int(_hex[0:2], 16), int(_hex[2:4], 16), int(_hex[4:6], 16)
         return (r, g, b)
     except Exception as e:
         LOG.info(e)
