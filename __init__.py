@@ -299,6 +299,7 @@ class Mark1(MycroftSkill):
             brightness = brightness.replace("%", "").strip()
         if 'percent' in brightness:
             brightness = brightness.replace("percent", "").strip()
+        LOG.info(brightness)
         return int(brightness)
 
     def set_eye_brightness(self, brightness, speak=True):
