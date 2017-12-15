@@ -15,6 +15,7 @@
 import astral
 import time
 import arrow
+from difflib import SequenceMatcher
 from mycroft.skills.core import MycroftSkill
 from mycroft.util import connected
 from mycroft.util.log import LOG
@@ -48,6 +49,28 @@ def hex_to_rgb(_hex):
     except Exception as e:
         LOG.info(e)
         LOG.info('Hex format is incorrect')
+        return None
+
+
+def fuzzy_match(color_a, color_dict):
+    """ fuzzy matches to for colors
+
+        Args:
+            color_a (str): color as string
+            color_dict (dict): dict with colors
+        Returns:
+            color: color from color_dict
+    """
+    highest_ratio = float("-inf")
+    _color = None
+    for color, value in color_dict.iteritems():
+        s = SequenceMatcher(None, color_a, color)
+        if s.ratio() > highest_ratio:
+            highest_ratio = color_a
+            _color = color
+    if highest_ratio > 0.8:
+        return _color
+    else:
         return None
 
 
@@ -171,12 +194,13 @@ class Mark1(MycroftSkill):
             data={'color': 'red'},
             expect_response=True)
 
-    def parse_color_from_string(self, string):
-        """ parses the color from string """
-        for color in self.color_dict.keys():
-            if color in string:
-                return color
-        return None
+    # def parse_color_from_string(self, string):
+    #     """ parses the color from string """
+    #     # for color in self.color_dict.keys():
+    #     #     if color in string:
+    #     #         return color
+    #     # return None
+    #     return fuzzy_match(string, self.color_dict)
 
     @intent_file_handler('eye.color.intent')
     def handle_eye_color(self, message):
@@ -187,7 +211,7 @@ class Mark1(MycroftSkill):
         """
         if 'color' in message.data:
             color_string = message.data.get('color', None)
-            color = self.parse_color_from_string(color_string)
+            color = fuzzy_match(color_string, self.color_dict)
             if color is not None:
                 self.set_eye_color(color=color)
                 self.settings['eye color'] = color

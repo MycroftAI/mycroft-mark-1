@@ -5,7 +5,8 @@ Customize your Mark 1
 The Mycroft Mark 1 has several unique capabilities which this skill lets you to control.
 
 __Eye Color__
-The Mark 1 has beautiful eyes -- and you get to pick their color!  Set them to a named color ("blue", "magenta", "teal", etc) or any color using RGB values.
+The Mark 1 has beautiful eyes -- and you get to pick their color!  Set them to a named color ("blue", "magenta", "teal", etc) or any
+color using RGB values. 
 
 __Faceplate Brightness__
 Set the faceplate to a specific brightness, or allow it to automatically adjust its brightness level to dim at night.
