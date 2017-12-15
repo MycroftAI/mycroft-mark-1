@@ -7,11 +7,7 @@
                 "fields": [
                     {
                         "type": "label",
-<<<<<<< HEAD
                         "label": "Format for eye color can be in RGB, Hex, or a Color: <ul><li>(34, 167, 240)</li><li>#019FDE</li><li>Green</li></ul>Please see the<a href='https://github.com/MycroftAI/mycroft-mark-1'>github repo</a> for more info"
-=======
-                        "label": "format for eye color can be in RGB, Hex, or Color: <ul><li>(34, 167, 240)</li><li>#019FDE</li><li>Green</li></ul>please see the README.md for available color choices"
->>>>>>> made tweaks to the settingsmeta
                     },
                     {
                         "name": "eye color",
