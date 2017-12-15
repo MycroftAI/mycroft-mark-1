@@ -36,13 +36,10 @@ def hex_to_rgb(_hex):
             (rgb): tuple i.e (123, 200, 155)
     """
     try:
-        LOG.info(_hex)
         if '#' in _hex:
             _hex = _hex.replace('#', "").strip()
-        LOG.info(_hex)
         if len(_hex) != 6:
             raise
-        LOG.info(_hex)
         (r, g, b) = \
             int(_hex[0:2], 16), int(_hex[2:4], 16), int(_hex[4:6], 16)
         return (r, g, b)
@@ -66,7 +63,7 @@ def fuzzy_match(color_a, color_dict):
     for color, value in color_dict.iteritems():
         s = SequenceMatcher(None, color_a, color)
         if s.ratio() > highest_ratio:
-            highest_ratio = color_a
+            highest_ratio = s.ratio()
             _color = color
     if highest_ratio > 0.8:
         return _color
@@ -194,13 +191,14 @@ class Mark1(MycroftSkill):
             data={'color': 'red'},
             expect_response=True)
 
-    # def parse_color_from_string(self, string):
-    #     """ parses the color from string """
-    #     # for color in self.color_dict.keys():
-    #     #     if color in string:
-    #     #         return color
-    #     # return None
-    #     return fuzzy_match(string, self.color_dict)
+    def fuzzy_set_eye_color(self, color):
+        """ set's the eye color with fuzzy mathching """
+        color = fuzzy_match(color, self.color_dict)
+        if color is not None:
+            self.set_eye_color(color=color)
+            self.settings['eye color'] = color
+        else:
+            self.speak_dialog('color.not.exist')
 
     @intent_file_handler('eye.color.intent')
     def handle_eye_color(self, message):
@@ -210,19 +208,12 @@ class Mark1(MycroftSkill):
                 message (dict): messagebus message from intent parser
         """
         if 'color' in message.data:
+            LOG.info(message.data)
             color_string = message.data.get('color', None)
-            color = fuzzy_match(color_string, self.color_dict)
-            if color is not None:
-                self.set_eye_color(color=color)
-                self.settings['eye color'] = color
-            else:
-                self.set_converse('need.color')
-                self.speak_dialog(
-                    'color.not.found.expect.response', expect_response=True)
+            self.fuzzy_set_eye_color(color_string)
         else:
-            self.set_converse('need.color')
-            self.speak_dialog(
-                'color.not.found.expect.response', expect_response=True)
+            response = self.get_response('color.need')
+            self.fuzzy_set_eye_color(response)
 
     def is_rgb_format_correct(self, rgb):
         """ checks for correct rgb format and value
@@ -275,8 +266,6 @@ class Mark1(MycroftSkill):
         # color is None of the above
         return None
 
-    # TODO: allow skills to update the web ui settings with
-    # rgb values. This will require some mycroft-core changes
     @intent_file_handler('get.color.web.intent')
     def handle_web_settings(self):
         """ Callback to set eye color to web settings
@@ -286,11 +275,9 @@ class Mark1(MycroftSkill):
         """
         self.settings.update_remote()
         _color = self.settings.get('eye color', "")
-        LOG.info(_color)
         rgb = self.parse_to_rgb(_color)
         if rgb is not None:
             correct = self.is_rgb_format_correct(rgb)
-            LOG.info(rgb)
             if correct:
                 self.set_eye_color(rgb=rgb)
             else:
@@ -323,7 +310,6 @@ class Mark1(MycroftSkill):
             brightness = brightness.replace("%", "").strip()
         if 'percent' in brightness:
             brightness = brightness.replace("percent", "").strip()
-        LOG.info(brightness)
         return int(brightness)
 
     def set_eye_brightness(self, brightness, speak=True):
@@ -523,57 +509,34 @@ class Mark1(MycroftSkill):
         self.should_converse = False
         self.converse_context = None
 
-    # def converse(self, utterances, lang='en-us'):
-    #     """ overrides MycroftSkill converse method. when return value is True,
-    #         any utterances after will be sent through the conveerse method
-    #         to be handled.
+    def converse(self, utterances, lang='en-us'):
+        """ overrides MycroftSkill converse method. when return value is True,
+            any utterances after will be sent through the conveerse method
+            to be handled.
 
-    #         Args:
-    #             utterances (str): utterances said to mycroft
-    #             lang (str): languge of utterance (currently not used)
-    #     """
-    #     utt = utterances[0]
-    #     if self.converse_context == 'need.color':
-    #         found_color = False
-    #         for color in self.color_dict:
-    #             if color in utt.lower():
-    #                 self.set_eye_color(color=color)
-    #                 found_color = True
-    #         if found_color is False:
-    #             self.speak_dialog('color.not.found')
-    #         self.reset_converse()
-    #         return True
-    #     elif self.converse_context == 'set.custom.color':
-    #         try:
-    #             value = int(utt)
-    #             if 0 <= value <= 255:
-    #                 self.custom_rgb.append(value)
-    #                 self.need_custom_dialog()
-    #                 if len(self.custom_rgb) == 3:
-    #                     self.set_eye_color(rgb=self.custom_rgb)
-    #                     self.settings['eye color'] = self.custom_rgb
-    #                     self.reset_converse()
-    #                 return True
-    #             else:
-    #                 raise
-    #         except Exception as e:
-    #             LOG.error(e)
-    #             self.need_custom_dialog('error.')
-    #     # elif self.converse_context == 'need.brightness':
-    #     #     try:
-    #     #         brightness = self.parse_brightness(utt.lower())
-    #     #         if not (0 <= brightness <= 100):
-    #     #             raise
-    #     #         else:
-    #     #             bright_val = self.convert_brightness(brightness)
-    #     #             self.set_eye_brightness(bright_val)
-    #     #             self.reset_converse()
-    #     #             return True
-    #     #     except Exception as e:
-    #     #         LOG.error(e)
-    #     #         self.speak_dialog('brightness.error', expect_response=True)
-    #     #         self.reset_converse()
-    #     return self.should_converse
+            Args:
+                utterances (str): utterances said to mycroft
+                lang (str): languge of utterance (currently not used)
+        """
+        if utterances:
+            utt = utterances[0]
+        if self.converse_context == 'set.custom.color':
+            try:
+                value = int(utt)
+                if 0 <= value <= 255:
+                    self.custom_rgb.append(value)
+                    self.need_custom_dialog()
+                    if len(self.custom_rgb) == 3:
+                        self.set_eye_color(rgb=self.custom_rgb)
+                        self.settings['eye color'] = self.custom_rgb
+                        self.reset_converse()
+                    return True
+                else:
+                    raise
+            except Exception as e:
+                LOG.error(e)
+                self.need_custom_dialog('error.')
+        return self.should_converse
 
 
 def create_skill():

@@ -1,4 +1,10 @@
 change the eye color to (the |){color}
 set eye color to (the |){color}
-have eye color be (the |){color}
 change eye to (the |){color}
+set eye color to something {color}
+change eye color to a {} color
+set eye to a {color} color
+set eye to some {color} color
+change eye to a {color} color
+set eye color
+change eye color
