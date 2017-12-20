@@ -8,7 +8,7 @@
                 "fields": [
                     {
                         "type": "label",
-                        "label": "Eye color can be a <a href='https://github.com/MycroftAI/mycroft-mark-1/blob/master/dialog/en-us/colors.value'>color name</a>, RGB triple, or hex color code.  <ul>Examples:<li>Green</li><li>(34, 167, 240)</li><li>#019FDE</li></ul>"
+                        "label": "Eye color can be a <a href='https://github.com/MycroftAI/mycroft-mark-1/blob/master/dialog/en-us/colors.value'>color name</a>, RGB triple, or hex color code.  <P>Examples:<ul><li>Green</li><li>(34, 167, 240)</li><li>#019FDE</li></ul>"
                     },
                     {
                         "name": "eye color",
