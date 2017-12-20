@@ -22,7 +22,6 @@ from mycroft.util.log import LOG
 from mycroft.audio import wait_while_speaking
 from mycroft import intent_file_handler
 from ast import literal_eval as parse_tuple
-from threading import Timer
 from pytz import timezone
 from datetime import datetime
 
@@ -49,8 +48,8 @@ def hex_to_rgb(_hex):
         return None
 
 
-def fuzzy_match(color_a, color_dict):
-    """ fuzzy matches to for colors
+def fuzzy_match_color(color_a, color_dict):
+    """ fuzzy match for colors
 
         Args:
             color_a (str): color as string
@@ -77,7 +76,6 @@ class Mark1(MycroftSkill):
         self.should_converse = False
         self._settings_loaded = False
         self.converse_context = None
-        self.custom_rgb = []
 
     def initialize(self):
         # Initialize...
@@ -97,6 +95,8 @@ class Mark1(MycroftSkill):
         except:
             pass
 
+        # TODO: Add MycroftSkill.register_entity_list() and use the
+        #  self.color_dict.keys() instead of duplicating data
         self.register_entity_file('color.entity')
 
         if connected():
@@ -108,45 +108,6 @@ class Mark1(MycroftSkill):
         # System came online later after booting
         self.enclosure.mouth_reset()
         self.set_eye_color(self.settings['eye color'], speak=False)
-
-    # TODO: Move in to MycroftSkill
-    def translate_namedvalues(self, name, delim=None):
-        """
-        Load translation dict containing names and values.
-        This loads a simple CSV from the 'dialog' folders.
-        The name is the first list item, the value is the
-        second.  Lines prefixed with # or // get ignored
-
-        Args:
-            name (str): name of the .value file, no extension needed
-            delim (char): delimiter character used, default is ','
-        Returns:
-            dict: name and value dictionary, or [] if load fails
-        """
-        import csv
-        from os.path import join
-
-        delim = delim or ','
-        result = {}
-        if not name.endswith(".value"):
-            name += ".value"
-
-        try:
-            with open(join(self.root_dir, 'dialog', self.lang, name)) as f:
-                reader = csv.reader(f, delimiter=delim)
-                for row in reader:
-                    # skip comment lines
-                    if not row or row[0].startswith("#"):
-                        continue
-                    if len(row) != 2:
-                        continue
-
-                    result[row[0]] = row[1]
-
-            return result
-        except Exception as e:
-            LOG.info(e)
-            return {}
 
     def set_eye_color(self, color=None, rgb=None, speak=True, initing=False):
         """ function to set eye color
@@ -176,24 +137,38 @@ class Mark1(MycroftSkill):
 
     @intent_file_handler('custom.eye.color.intent')
     def handle_custom_eye_color(self, message):
-        """ Intent Callback to set custom eye colors in rgb
+        # Conversational interaction to set a custom eye color
 
-            Args:
-                message (dict): messagebus message from intent parser
-        """
-        # reset list
-        self.custom_rgb = []
-        self.set_converse('set.custom.color')
+        def is_byte(utt):
+            try:
+                return 0 <= int(utt) <= 255
+            except:
+                return False
+
         self.speak_dialog('set.custom.color')
         wait_while_speaking()
-        self.speak_dialog(
-            'need.custom',
-            data={'color': 'red'},
-            expect_response=True)
+        r = self.get_response('get.r.value', validator=is_byte,
+                              on_fail="error.rgbvalue", num_retries=2)
+        if not r:
+            return  # cancelled
+
+        g = self.get_response('get.g.value', validator=is_byte,
+                              on_fail="error.rgbvalue", num_retries=2)
+        if not g:
+            return  # cancelled
+
+        b = self.get_response('get.b.value', validator=is_byte,
+                              on_fail="error.rgbvalue", num_retries=2)
+        if not b:
+            return  # cancelled
+
+        custom_rgb = [r, g, b]
+        self.set_eye_color(rgb=custom_rgb)
+        self.settings['eye color'] = custom_rgb
 
     def fuzzy_set_eye_color(self, color):
-        """ set's the eye color with fuzzy mathching """
-        color = fuzzy_match(color, self.color_dict)
+        """ set's the eye color with fuzzy matching """
+        color = fuzzy_match_color(color, self.color_dict)
         if color is not None:
             self.set_eye_color(color=color)
             self.settings['eye color'] = color
@@ -207,13 +182,11 @@ class Mark1(MycroftSkill):
             Args:
                 message (dict): messagebus message from intent parser
         """
-        if 'color' in message.data:
-            LOG.info(message.data)
-            color_string = message.data.get('color', None)
+        self.log.debug("======== "+str(message.data))
+        color_string = (message.data.get('color', None) or
+                        self.get_response('color.need'))
+        if color_string:
             self.fuzzy_set_eye_color(color_string)
-        else:
-            response = self.get_response('color.need')
-            self.fuzzy_set_eye_color(response)
 
     def is_rgb_format_correct(self, rgb):
         """ checks for correct rgb format and value
@@ -240,6 +213,9 @@ class Mark1(MycroftSkill):
             returns:
                 (r, g, b) (tuple): rgb from 0 - 255
         """
+        if not color:
+            return None
+
         # color exist in dict
         color = color.lower()
         if color in self.color_dict:
@@ -275,10 +251,14 @@ class Mark1(MycroftSkill):
         """
         self.settings.update_remote()
         _color = self.settings.get('eye color', "")
+        if not _color:
+            self.speak_dialog('no.web.setting')
+            return
+
+        # Try to parse the value entered there
         rgb = self.parse_to_rgb(_color)
         if rgb is not None:
-            correct = self.is_rgb_format_correct(rgb)
-            if correct:
+            if self.is_rgb_format_correct(rgb):
                 self.set_eye_color(rgb=rgb)
             else:
                 self.speak_dialog('error.format')
@@ -328,9 +308,7 @@ class Mark1(MycroftSkill):
                 bool
         """
         try:
-            if (0 <= int(brightness) <= 100) is False:
-                raise
-            return True
+            return 0 <= int(brightness) <= 100
         except:
             return False
 
@@ -341,8 +319,8 @@ class Mark1(MycroftSkill):
                     validator=self.brightness_validator,
                     num_retries=1)
         if response is not None:
-            braight_val = self.convert_brightness(response)
-            self.set_eye_brightness(braight_val)
+            bright_val = self.convert_brightness(response)
+            self.set_eye_brightness(bright_val)
         else:
             self.speak_dialog('brightness.not.found.final')
 
@@ -411,7 +389,7 @@ class Mark1(MycroftSkill):
         }
 
     def schedule_brightness(self, time_of_day, pair):
-        """ shcedule auto bright ness with the event scheduler
+        """ schedule auto brightness with the event scheduler
 
             Args:
                 time_of_day (str): Sunrise, Noon, Sunset
@@ -472,71 +450,6 @@ class Mark1(MycroftSkill):
             self.set_eye_brightness(brightness, speak=False)
             pair = self._get_auto_time()[time_of_day]
             self.schedule_brightness(time_of_day, pair)
-
-    def need_custom_dialog(self, error=""):
-        """ handles dialog to retrieve custom color
-
-            Args:
-                error (str): to set speak_dialog to error
-        """
-        if len(self.custom_rgb) == 0:
-            self.speak_dialog(
-                '{}need.custom'.format(error),
-                data={'color': 'red'},
-                expect_response=True)
-        elif len(self.custom_rgb) == 1:
-            self.speak_dialog(
-                '{}need.custom'.format(error),
-                data={'color': 'green'},
-                expect_response=True)
-        elif len(self.custom_rgb) == 2:
-            self.speak_dialog(
-                '{}need.custom'.format(error),
-                data={'color': 'blue'},
-                expect_response=True)
-
-    def set_converse(self, context):
-        """ to invoke the converse method
-
-            Args:
-                context (str): string to set context for converse
-        """
-        self.should_converse = True
-        self.converse_context = context
-
-    def reset_converse(self):
-        """ set converse to false and empty converse_context """
-        self.should_converse = False
-        self.converse_context = None
-
-    def converse(self, utterances, lang='en-us'):
-        """ overrides MycroftSkill converse method. when return value is True,
-            any utterances after will be sent through the conveerse method
-            to be handled.
-
-            Args:
-                utterances (str): utterances said to mycroft
-                lang (str): languge of utterance (currently not used)
-        """
-        if utterances:
-            utt = utterances[0]
-        if self.converse_context == 'set.custom.color':
-            try:
-                value = int(utt)
-                if 0 <= value <= 255:
-                    self.custom_rgb.append(value)
-                    self.need_custom_dialog()
-                    if len(self.custom_rgb) == 3:
-                        self.set_eye_color(rgb=self.custom_rgb)
-                        self.settings['eye color'] = self.custom_rgb
-                        self.reset_converse()
-                    return True
-                else:
-                    raise
-            except Exception as e:
-                LOG.error(e)
-                self.need_custom_dialog('error.')
-        return self.should_converse
 
 
 def create_skill():

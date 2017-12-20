@@ -1,5 +1,6 @@
+change your eye color to (the |){color|*}
 change the eye color to (the |){color}
-set eye color to (the |){color}
+set eye color to (the |){color|*}
 change eye to (the |){color}
 set eye color to something {color}
 change eye color to a {} color
