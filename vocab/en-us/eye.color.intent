@@ -1,11 +1,6 @@
-change your eye color to (the |){color|*}
-change the eye color to (the |){color}
-set eye color to (the |){color|*}
-change eye to (the |){color}
-set eye color to something {color}
-change eye color to a {} color
-set eye to a {color} color
-set eye to some {color} color
-change eye to a {color} color
-set eye color
-change eye color
+(change|set) (the|your) (eye|eyes) (color|colors|) to {color}
+(change|set) eye (color|colors) to something {color}
+(change|set) (your|) eyes to (a|an|) {color} (color|)
+(change|set) eyes to some {color} color
+(change|set) (eye|eyes) to (a|an) {color} color
+(change|set) eye (color|colors)

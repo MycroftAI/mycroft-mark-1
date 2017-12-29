@@ -19,6 +19,7 @@ from difflib import SequenceMatcher
 from mycroft.skills.core import MycroftSkill
 from mycroft.util import connected
 from mycroft.util.log import LOG
+from mycroft.util.parse import normalize
 from mycroft.audio import wait_while_speaking
 from mycroft import intent_file_handler
 from ast import literal_eval as parse_tuple
@@ -168,10 +169,12 @@ class Mark1(MycroftSkill):
 
     def fuzzy_set_eye_color(self, color):
         """ set's the eye color with fuzzy matching """
-        color = fuzzy_match_color(color, self.color_dict)
-        if color is not None:
-            self.set_eye_color(color=color)
-            self.settings['eye color'] = color
+        # TODO:18.02: normalize() should automatically get current intent lang
+        match = fuzzy_match_color(normalize(color), self.color_dict)
+        self.log.debug("Search color: "+color+"    Match color: "+match)
+        if match is not None:
+            self.set_eye_color(color=match)
+            self.settings['eye color'] = match
         else:
             self.speak_dialog('color.not.exist')
 
@@ -182,7 +185,6 @@ class Mark1(MycroftSkill):
             Args:
                 message (dict): messagebus message from intent parser
         """
-        self.log.debug("======== "+str(message.data))
         color_string = (message.data.get('color', None) or
                         self.get_response('color.need'))
         if color_string:
