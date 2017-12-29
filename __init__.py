@@ -349,7 +349,7 @@ class Mark1(MycroftSkill):
                 message (dict): messagebus message from intent parser
         """
         brightness = (message.data.get('brightness', None) or
-                        self.get_response('brightness.not.found'))
+                      self.get_response('brightness.not.found'))
         if brightness:
             self._set_brightness(brightness)
 

@@ -15,10 +15,12 @@ Set the faceplate to a specific brightness, or allow it to automatically adjust
 its brightness level to dim at night.
 
 ## Examples
-* "Set eye color to pink"
+* "Set your eye color to pink"
+* "Change your eye color to the default"
 * "Set a custom eye color" (you'll be prompted for values)
 * "Turn on auto brightness"
-* "Set brightness to 75 percent"
+* "Change to low brightness"
+* "Dim to 50%"
 
 ## Credits
 Mycroft Inc
