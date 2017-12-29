@@ -1,5 +1,6 @@
 {
     "name": "Mark 1 Skill",
+    "color": "#22a7f0",
     "skillMetadata": {
         "sections": [
             {
@@ -7,7 +8,7 @@
                 "fields": [
                     {
                         "type": "label",
-                        "label": "format for eye color can be in: <ul><li>RGB: (34, 167, 240)</li><li>HEX: #019FDE</li><li>Color: Green</li></ul>please see the README.md for available color choices"
+                        "label": "Eye color can be a <a href='https://github.com/MycroftAI/mycroft-mark-1/blob/master/dialog/en-us/colors.value'>color name</a>, RGB triple, or hex color code.  <P>Examples:<ul><li>Green</li><li>(34, 167, 240)</li><li>#019FDE</li></ul>"
                     },
                     {
                         "name": "eye color",
