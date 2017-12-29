@@ -1,10 +1,14 @@
-dim the your eyes to {brightness} (percent|)
-dim it down a bit
+dim (the|your) eyes to {brightness} (percent|)
 dim down to {brightness} (percent|)
 lower the brightness of your eyes to {brightness} (percent|)
-turn down brightness to {brightness} (percent|)
-turn up the brightness to {brightness} (percent|)
-brigthen it up a bit to {brightness} (percent|)
-brigthen it up to
-set brightness to {brightness} (percent|)
-set the brightness level
+turn (the|) brightness (down|up) to {brightness} (percent|)
+turn (down|up) (the|) brightness to {brightness} (percent|)
+brighten it up (a bit|) to {brightness} (percent|)
+(change|set|switch) to {brightness} (percent|) (eye|) brightness
+(change|set|switch) (eye|) brightness to {brightness} (percent|)
+(change|set|switch) the brightness level
+(change|set|switch) the eye brightness
+you're (too|) (bright|dim)
+you are (too|) (bright|dim)
+brighten it up
+dim it down a bit

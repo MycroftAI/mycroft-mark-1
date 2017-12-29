@@ -85,8 +85,8 @@ class Mark1(MycroftSkill):
         if self.settings.get('eye color') is None:
             self.settings['eye color'] = "default"
 
+        self.brightness_dict = self.translate_namedvalues('brightness.levels')
         self.color_dict = self.translate_namedvalues('colors')
-        LOG.info(self.color_dict)
 
         # Handle changing the eye color once Mark 1 is ready to go
         # (Part of the statup sequence)
@@ -222,26 +222,28 @@ class Mark1(MycroftSkill):
         color = color.lower()
         if color in self.color_dict:
             return hex_to_rgb(self.color_dict[color])
+
         # color is rgb
         try:
             (r, g, b) = parse_tuple(color)
             return (r, g, b)
         except:
-            LOG.info('RGB format is incorrect')
+            pass
 
         # color is hex
         try:
             if '#' in color:
-                color = color.replace('#', "")
-            if len(color) != 6:
+                hex = color.replace('#', "")
+            if len(hex) != 6:
                 raise
             (r, g, b) = \
-                int(color[0:2], 16), int(color[2:4], 16), int(color[4:6], 16)
+                int(hex[0:2], 16), int(hex[2:4], 16), int(hex[4:6], 16)
             return (r, g, b)
         except:
-            LOG.info('Hex format is incorrect')
+            pass
 
         # color is None of the above
+        LOG.info('Color failed parsing: '+str(color))
         return None
 
     @intent_file_handler('get.color.web.intent')
@@ -267,7 +269,7 @@ class Mark1(MycroftSkill):
         else:
             self.speak_dialog('error.format')
 
-    def convert_brightness(self, percent):
+    def percent_to_level(self, percent):
         """ converts the brigtness value from percentage to
              a value arduino can read
 
@@ -280,51 +282,64 @@ class Mark1(MycroftSkill):
         return int(float(percent)/float(100)*30)
 
     def parse_brightness(self, brightness):
-        """ parse text for brightness level
+        """ parse text for brightness percentage
 
             Args:
                 brightness (str): string containing brightness level
 
             return:
-                (int): brightness level
+                (int): brightness as percentage (0-100)
         """
-        if '%' in brightness:
-            brightness = brightness.replace("%", "").strip()
-        if 'percent' in brightness:
-            brightness = brightness.replace("percent", "").strip()
-        return int(brightness)
 
-    def set_eye_brightness(self, brightness, speak=True):
-        """ set eye brightness """
-        self.enclosure.eyes_brightness(brightness)
-        if speak is True:
-            brightness = int(float(brightness)*float(100)/float(30))
-            self.speak_dialog(
-                'brightness.set', data={'val': str(brightness)+'%'})
-
-    def brightness_validator(self, brightness):
-        """ validate brightness is int or between 0 to 100
-            Args:
-                brightness (int): integer of brightness
-            Returns:
-                bool
-        """
         try:
-            return 0 <= int(brightness) <= 100
-        except:
-            return False
+            # Handle "full", etc.
+            name = normalize(brightness)
+            if name in self.brightness_dict:
+                return self.brightness_dict[name]
 
-    def set_brightness_converse(self):
-        """ setoff converse method for brightness """
-        response = self.get_response(
-                    'brightness.not.found',
-                    validator=self.brightness_validator,
-                    num_retries=1)
-        if response is not None:
-            bright_val = self.convert_brightness(response)
-            self.set_eye_brightness(bright_val)
-        else:
+            if '%' in brightness:
+                brightness = brightness.replace("%", "").strip()
+                return int(brightness)
+            if 'percent' in brightness:
+                brightness = brightness.replace("percent", "").strip()
+                return int(brightness)
+
+            i = int(brightness)
+            if i < 0 or i > 100:
+                return None
+
+            if i < 30:
+                # Assmume plain 0-30 is "level"
+                return int((i*100.0)/30.0)
+
+            # Assume plain 31-100 is "percentage"
+            return i
+        except:
+            return None  # failed in an int() conversion
+
+    def set_eye_brightness(self, level, speak=True):
+        """ Actually change hardware eye brightness
+
+            Args:
+                level (int): 0-30, brightness level
+                speak (bool): when True, speak a confirmation
+        """
+        self.enclosure.eyes_brightness(level)
+        if speak is True:
+            percent = int(float(level)*float(100)/float(30))
+            self.speak_dialog(
+                'brightness.set', data={'val': str(percent)+'%'})
+
+    def _set_brightness(self, brightness):
+        # brightness can be a number or word like "full", "half"
+        percent = self.parse_brightness(brightness)
+        if percent is None:
             self.speak_dialog('brightness.not.found.final')
+        elif int(percent) is -1:
+            self.handle_auto_brightness(None)
+        else:
+            self.auto_brightness = False
+            self.set_eye_brightness(self.percent_to_level(percent))
 
     @intent_file_handler('brightness.intent')
     def handle_brightness(self, message):
@@ -333,28 +348,16 @@ class Mark1(MycroftSkill):
             Args:
                 message (dict): messagebus message from intent parser
         """
-        LOG.info(message.data)
-        self.auto_brightness = False
-        if 'brightness' in message.data:
-            try:
-                brightness = self.parse_brightness(
-                                    message.data.get('brightness'))
-                if (0 <= brightness <= 100) is False:
-                    raise
-                else:
-                    bright_val = self.convert_brightness(brightness)
-                    self.set_eye_brightness(bright_val)
-            except Exception as e:
-                LOG.error(e)
-                self.set_brightness_converse()
-        else:
-            self.set_brightness_converse()
+        brightness = (message.data.get('brightness', None) or
+                        self.get_response('brightness.not.found'))
+        if brightness:
+            self._set_brightness(brightness)
 
     def _get_auto_time(self):
         """ get dawn, sunrise, noon, sunset, and dusk time
 
             returns:
-                times (dict): dict with associated (datetime, brightnes)
+                times (dict): dict with associated (datetime, level)
         """
         tz = self.location['timezone']['code']
         lat = self.location['coordinate']['latitude']
@@ -385,9 +388,9 @@ class Mark1(MycroftSkill):
                     seconds=secs).replace(tzinfo='UTC').datetime
 
         return {
-            'Sunrise': (sunrise, 20),
-            'Noon': (noon, 30),
-            'Sunset': (sunset, 5)
+            'Sunrise': (sunrise, 20),  # high
+            'Noon': (noon, 30),        # full
+            'Sunset': (sunset, 5)      # dim
         }
 
     def schedule_brightness(self, time_of_day, pair):
@@ -430,13 +433,17 @@ class Mark1(MycroftSkill):
                 nearest_time_to_now = (abs(now - t), pair[1], time_of_day)
         LOG.info(nearest_time_to_now)
         self.set_eye_brightness(nearest_time_to_now[1], speak=False)
-        tod = nearest_time_to_now[2]
-        if tod == 'Sunrise':
-            self.speak_dialog('auto.sunrise')
-        elif tod == 'Sunset':
-            self.speak_dialog('auto.sunset')
-        elif tod == 'Noon':
-            self.speak_dialog('auto.noon')
+
+        # SSP: I'm disabling this for now.  I don't think we
+        # should announce this every day, it'll get tedious.
+        #
+        # tod = nearest_time_to_now[2]
+        # if tod == 'Sunrise':
+        #     self.speak_dialog('auto.sunrise')
+        # elif tod == 'Sunset':
+        #     self.speak_dialog('auto.sunset')
+        # elif tod == 'Noon':
+        #     self.speak_dialog('auto.noon')
 
     def _handle_eye_brightness_event(self, message):
         """ wrapper for setting eye brightness from
@@ -447,9 +454,9 @@ class Mark1(MycroftSkill):
         """
         if self.auto_brightness is True:
             time_of_day = message.data[0]
-            brightness = message.data[1]
+            level = message.data[1]
             self.cancel_scheduled_event(time_of_day)
-            self.set_eye_brightness(brightness, speak=False)
+            self.set_eye_brightness(level, speak=False)
             pair = self._get_auto_time()[time_of_day]
             self.schedule_brightness(time_of_day, pair)
 
