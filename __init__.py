@@ -16,15 +16,17 @@ import astral
 import time
 import arrow
 from difflib import SequenceMatcher
+from ast import literal_eval as parse_tuple
+from pytz import timezone
+from datetime import datetime, timedelta
+
 from mycroft.skills.core import MycroftSkill
 from mycroft.util import connected
 from mycroft.util.log import LOG
 from mycroft.util.parse import normalize
 from mycroft.audio import wait_while_speaking
 from mycroft import intent_file_handler
-from ast import literal_eval as parse_tuple
-from pytz import timezone
-from datetime import datetime
+import mycroft.client.enclosure.display_manager as DisplayManager
 
 
 def hex_to_rgb(_hex):
@@ -77,6 +79,8 @@ class Mark1(MycroftSkill):
         self.should_converse = False
         self._settings_loaded = False
         self.converse_context = None
+        self.idle_count = 99
+        self._current_color = (34, 167, 240)  # Mycroft blue
 
     def initialize(self):
         # Initialize...
@@ -88,11 +92,16 @@ class Mark1(MycroftSkill):
         self.brightness_dict = self.translate_namedvalues('brightness.levels')
         self.color_dict = self.translate_namedvalues('colors')
 
-        # Handle changing the eye color once Mark 1 is ready to go
-        # (Part of the statup sequence)
         try:
+            # Handle changing the eye color once Mark 1 is ready to go
+            # (Part of the statup sequence)
             self.add_event('mycroft.internet.connected',
                            self.handle_internet_connected)
+
+            # Handle the 'waking' visual
+            self.add_event('recognizer_loop:record_begin',
+                           self.handle_listener_started)
+            self.start_idle_check()
         except:
             pass
 
@@ -105,10 +114,60 @@ class Mark1(MycroftSkill):
             self.enclosure.mouth_reset()
             self.set_eye_color(self.settings['eye color'], initing=True)
 
+    #####################################################################
+    # Manage "idle" visual state
+
+    def start_idle_check(self):
+        # Clear any existing checker
+        self.cancel_scheduled_event('IdleCheck')
+
+        # Schedule a check every 10 seconds
+        now = datetime.now()
+        callback_time = (datetime(now.year, now.month, now.day,
+                                  now.hour, now.minute) +
+                         timedelta(seconds=10))
+        self.schedule_repeating_event(self.check_for_idle, callback_time,
+                                      10, name='IdleCheck')
+
+    def check_for_idle(self):
+        if DisplayManager.get_active() == '':
+            # No activity, start to fall asleep
+            self.idle_count += 1
+            if self.idle_count > 2:
+                # Go into a 'sleep' state
+                self.cancel_scheduled_event('IdleCheck')
+                self.enclosure.eyes_look('d')
+                rgb = self._darker_color(self._current_color, 0.5)
+                self.enclosure.eyes_color(rgb[0], rgb[1], rgb[2])
+        else:
+            self.idle_count = 0
+
+    def _darker_color(self, rgb, factor):
+        (r, g, b) = rgb
+        return (int(r*factor), int(g*factor), int(b*factor))
+
+    def handle_listener_started(self, message):
+        self.log.info("Listener_started: "+str(self.idle_count))
+        # Check if in 'idle' state and visually come to attention
+        if self.idle_count > 2:
+            # Perform 'waking' animation
+            self.enclosure.eyes_blink('b')
+            rgb = self._current_color
+            self.enclosure.eyes_color(rgb[0], rgb[1], rgb[2])
+            # Begin checking for the idle state again
+            self.idle_count = 0
+            self.start_idle_check()
+
+    #####################################################################
+    # Manage network connction feedback
+
     def handle_internet_connected(self, message):
         # System came online later after booting
         self.enclosure.mouth_reset()
         self.set_eye_color(self.settings['eye color'], speak=False)
+
+    #####################################################################
+    # Intent interaction
 
     def set_eye_color(self, color=None, rgb=None, speak=True, initing=False):
         """ function to set eye color
