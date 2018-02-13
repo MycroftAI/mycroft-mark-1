@@ -29,25 +29,39 @@ from mycroft import intent_file_handler
 import mycroft.client.enclosure.display_manager as DisplayManager
 
 
-def hex_to_rgb(_hex):
-    """ turns hex into rgb
+# TODO: Move this to the EnclosureAPI.eyes_setpixel()
+def enclosure_eyes_setpixel(neopixel_idx, r=255, g=255, b=255):
+    """Set individual pixels on the Mark 1 neopixel display
 
-        Args:
-            hex (str): hex i.e #ff12ff
-        Returns:
-            (rgb): tuple i.e (123, 200, 155)
+    Args:
+        neopixel_idx (int): 0-11 for the right eye, 12-23 for the left
+        r (int): The red value to apply
+        g (int): The green value to apply
+        b (int): The blue value to apply
+    """
+    import subprocess
+
+    color = (int(r) * 65536) + (int(g) * 256) + int(b)
+    subprocess.call('echo "eyes.set=' + str(int(neopixel_idx)) +
+                    ',' + str(color) + '" > /dev/ttyAMA0', shell=True)
+    time.sleep(0.01)  # hack to prevent overload of the serial port
+
+
+def _hex_to_rgb(_hex):
+    """ Convert hex color code to RGB tuple
+    Args:
+        hex (str): Hex color string, e.g '#ff12ff' or 'ff12ff'
+    Returns:
+        (rgb): tuple i.e (123, 200, 155) or None
     """
     try:
         if '#' in _hex:
             _hex = _hex.replace('#', "").strip()
         if len(_hex) != 6:
-            raise
-        (r, g, b) = \
-            int(_hex[0:2], 16), int(_hex[2:4], 16), int(_hex[4:6], 16)
+            return None
+        (r, g, b) = int(_hex[0:2], 16), int(_hex[2:4], 16), int(_hex[4:6], 16)
         return (r, g, b)
     except Exception as e:
-        LOG.info(e)
-        LOG.info('Hex format is incorrect')
         return None
 
 
@@ -74,6 +88,9 @@ def fuzzy_match_color(color_a, color_dict):
 
 
 class Mark1(MycroftSkill):
+
+    IDLE_CHECK_FREQUENCY = 6  # in seconds
+
     def __init__(self):
         super(Mark1, self).__init__("Mark1")
         self.should_converse = False
@@ -114,6 +131,8 @@ class Mark1(MycroftSkill):
             self.enclosure.mouth_reset()
             self.set_eye_color(self.settings['eye color'], initing=True)
 
+        self.settings.set_changed_callback(self.on_websettings_changed)
+
     #####################################################################
     # Manage "idle" visual state
 
@@ -121,24 +140,45 @@ class Mark1(MycroftSkill):
         # Clear any existing checker
         self.cancel_scheduled_event('IdleCheck')
 
-        # Schedule a check every 10 seconds
-        now = datetime.now()
-        callback_time = (datetime(now.year, now.month, now.day,
-                                  now.hour, now.minute) +
-                         timedelta(seconds=10))
-        self.schedule_repeating_event(self.check_for_idle, callback_time,
-                                      10, name='IdleCheck')
+        if self.settings['auto_dim_eyes'] == "true":
+            # Schedule a check every few seconds
+            now = datetime.now()
+            callback_time = (datetime(now.year, now.month, now.day,
+                                      now.hour, now.minute) +
+                             timedelta(seconds=Mark1.IDLE_CHECK_FREQUENCY))
+            self.schedule_repeating_event(self.check_for_idle, callback_time,
+                                          Mark1.IDLE_CHECK_FREQUENCY,
+                                          name='IdleCheck')
 
     def check_for_idle(self):
+        if not self.settings['auto_dim_eyes'] == "true":
+            self.cancel_scheduled_event('IdleCheck')
+            return
+
         if DisplayManager.get_active() == '':
             # No activity, start to fall asleep
             self.idle_count += 1
-            if self.idle_count > 2:
-                # Go into a 'sleep' state
-                self.cancel_scheduled_event('IdleCheck')
+            if self.idle_count == 2:
+                # Go into a 'sleep' visual state
                 self.enclosure.eyes_look('d')
+
+                # Lower the eyes
+                time.sleep(0.5)
+                rgb = self._current_color
+                enclosure_eyes_setpixel(3, r=rgb[0], g=rgb[1], b=rgb[2])
+                enclosure_eyes_setpixel(8, r=rgb[0], g=rgb[1], b=rgb[2])
+                enclosure_eyes_setpixel(15, r=rgb[0], g=rgb[1], b=rgb[2])
+                enclosure_eyes_setpixel(20, r=rgb[0], g=rgb[1], b=rgb[2])
+            elif self.idle_count > 2:
+                self.cancel_scheduled_event('IdleCheck')
+
+                # Go into an 'inattentive' visual state
                 rgb = self._darker_color(self._current_color, 0.5)
-                self.enclosure.eyes_color(rgb[0], rgb[1], rgb[2])
+                for idx in range(3, 9):
+                    enclosure_eyes_setpixel(idx, r=rgb[0], g=rgb[1], b=rgb[2])
+                for idx in range(15, 21):
+                    enclosure_eyes_setpixel(idx, r=rgb[0], g=rgb[1], b=rgb[2])
+
         else:
             self.idle_count = 0
 
@@ -147,7 +187,10 @@ class Mark1(MycroftSkill):
         return (int(r*factor), int(g*factor), int(b*factor))
 
     def handle_listener_started(self, message):
-        self.log.info("Listener_started: "+str(self.idle_count))
+        if not self.settings['auto_dim_eyes'] == "true":
+            self.cancel_scheduled_event('IdleCheck')
+            return
+
         # Check if in 'idle' state and visually come to attention
         if self.idle_count > 2:
             # Perform 'waking' animation
@@ -167,27 +210,54 @@ class Mark1(MycroftSkill):
         self.set_eye_color(self.settings['eye color'], speak=False)
 
     #####################################################################
-    # Intent interaction
+    # Color interactions
+
+    def on_websettings_changed(self):
+        # Update eye color if necessary
+        _color = self.settings.get('eye color')
+        if _color and self._parse_to_rgb(_color) != self._current_color:
+            self.set_eye_color(color=_color, speak=False)
+
+        # Update eye state if auto_dim_eyes changes...
+        if self.settings.get("auto_dim_eyes") == "true":
+            self.start_idle_check()
+        else:
+            # No longer dimming, show open eyes if closed...
+            self.cancel_scheduled_event('IdleCheck')
+            if self.idle_count > 2:
+                self.idle_count = 0
+                rgb = self._current_color
+                self.enclosure.eyes_color(rgb[0], rgb[1], rgb[2])
 
     def set_eye_color(self, color=None, rgb=None, speak=True, initing=False):
-        """ function to set eye color
-
-            Args:
-                custom (bool): user inputed rgb
-                speak (bool): to have success speak on change
+        """ Change the eye color on the faceplate, update saved setting
+        Args:
+            custom (bool): user provided rgb
+            speak (bool): to have success speak on change
         """
         if color is not None:
-            color_rgb = hex_to_rgb(self.color_dict.get(color, None))
+            color_rgb = self._parse_to_rgb(color)
             if color_rgb is not None:
                 (r, g, b) = color_rgb
-                self.enclosure.eyes_color(r, g, b)
         elif rgb is not None:
-                (r, g, b) = rgb
-                self.enclosure.eyes_color(r, g, b)
+            (r, g, b) = rgb
+        else:
+            return  # no color provided!
+
         try:
+            self.enclosure.eyes_color(r, g, b)
+            self.idle_count = 0  # changing the color resets eyes to open
             self._current_color = (r, g, b)
             if speak and not initing:
                 self.speak_dialog('set.color.success')
+
+            # Update saved color if necessary
+            _color = self._parse_to_rgb(self.settings.get('eye color'))
+            if self._current_color != _color:
+                if color is not None:
+                    self.settings['eye color'] = color
+                else:
+                    self.settings['eye color'] = [r, g, b]
         except:
             self.log.debug('Bad color code: '+str(color))
             if speak and not initing:
@@ -224,18 +294,6 @@ class Mark1(MycroftSkill):
 
         custom_rgb = [r, g, b]
         self.set_eye_color(rgb=custom_rgb)
-        self.settings['eye color'] = custom_rgb
-
-    def fuzzy_set_eye_color(self, color):
-        """ set's the eye color with fuzzy matching """
-        # TODO:18.02: normalize() should automatically get current intent lang
-        match = fuzzy_match_color(normalize(color), self.color_dict)
-        self.log.debug("Search color: "+color+"    Match color: "+match)
-        if match is not None:
-            self.set_eye_color(color=match)
-            self.settings['eye color'] = match
-        else:
-            self.speak_dialog('color.not.exist')
 
     @intent_file_handler('eye.color.intent')
     def handle_eye_color(self, message):
@@ -244,89 +302,52 @@ class Mark1(MycroftSkill):
             Args:
                 message (dict): messagebus message from intent parser
         """
-        color_string = (message.data.get('color', None) or
-                        self.get_response('color.need'))
-        if color_string:
-            self.fuzzy_set_eye_color(color_string)
+        color_str = (message.data.get('color', None) or
+                     self.get_response('color.need'))
+        if color_str:
+            # TODO:18.02: normalize() should automatically get current lang
+            match = fuzzy_match_color(normalize(color_str), self.color_dict)
+            if match is not None:
+                self.set_eye_color(color=match)
+            else:
+                self.speak_dialog('color.not.exist')
 
-    def is_rgb_format_correct(self, rgb):
-        """ checks for correct rgb format and value
+    def _parse_to_rgb(self, color):
+        """ Convert color descriptor to RGB
 
-            Args:
-                rgb (tuple): tuple with integer values
+        Parse a color name ('dark blue'), hex ('#000088') or rgb tuple
+        '(0,0,128)' to an RGB tuple.
 
-            return:
-                (bool): for correct rgb value
-        """
-        (r, g, b) = rgb
-        if 0 <= r <= 255 and 0 <= g <= 255 and 0 <= b <= 255:
-            return True
-        else:
-            return False
-
-    def parse_to_rgb(self, color):
-        """ parse the color and returns rgb. color can be
-            Hex, RGB, or color from color_dict
-
-            Args:
-                color (str): RGB, Hex, or color from color_dict
-
-            returns:
-                (r, g, b) (tuple): rgb from 0 - 255
+        Args:
+            color (str): RGB, Hex, or color from color_dict
+        Returns:
+            (r, g, b) (tuple): Tuple of rgb values (0-255) or None
         """
         if not color:
             return None
 
-        # color exist in dict
-        color = color.lower()
-        if color in self.color_dict:
-            return hex_to_rgb(self.color_dict[color])
+        # check if named color in dict
+        try:
+            if color.lower() in self.color_dict:
+                return _hex_to_rgb(self.color_dict[color.lower()])
+        except:
+            pass
 
-        # color is rgb
+        # check if rgb tuple like '(0,0,128)'
         try:
             (r, g, b) = parse_tuple(color)
-            return (r, g, b)
-        except:
-            pass
-
-        # color is hex
-        try:
-            if '#' in color:
-                hex = color.replace('#', "")
-            if len(hex) != 6:
-                raise
-            (r, g, b) = \
-                int(hex[0:2], 16), int(hex[2:4], 16), int(hex[4:6], 16)
-            return (r, g, b)
-        except:
-            pass
-
-        # color is None of the above
-        LOG.info('Color failed parsing: '+str(color))
-        return None
-
-    @intent_file_handler('get.color.web.intent')
-    def handle_web_settings(self):
-        """ Callback to set eye color to web settings
-
-            Args:
-                message (dict): messagebus message from intent parser
-        """
-        self.settings.update_remote()
-        _color = self.settings.get('eye color', "")
-        if not _color:
-            self.speak_dialog('no.web.setting')
-            return
-
-        # Try to parse the value entered there
-        rgb = self.parse_to_rgb(_color)
-        if rgb is not None:
-            if self.is_rgb_format_correct(rgb):
-                self.set_eye_color(rgb=rgb)
+            if 0 <= r <= 255 and 0 <= g <= 255 and 0 <= b <= 255:
+                return (r, g, b)
             else:
-                self.speak_dialog('error.format')
-        else:
-            self.speak_dialog('error.format')
+                return None
+        except:
+            pass
+
+        # Finally check if color is hex, like '#0000cc' or '0000cc'
+        return _hex_to_rgb(color)
+
+    #####################################################################
+    # Brightness intent interaction
 
     def percent_to_level(self, percent):
         """ converts the brigtness value from percentage to
@@ -490,7 +511,6 @@ class Mark1(MycroftSkill):
             t = arrow.get(pair[0]).timestamp
             if abs(now - t) < nearest_time_to_now[0]:
                 nearest_time_to_now = (abs(now - t), pair[1], time_of_day)
-        LOG.info(nearest_time_to_now)
         self.set_eye_brightness(nearest_time_to_now[1], speak=False)
 
         # SSP: I'm disabling this for now.  I don't think we
