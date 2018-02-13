@@ -4,18 +4,35 @@
     "skillMetadata": {
         "sections": [
             {
-                "name": "R G B",
+                "name": "Eyes",
                 "fields": [
                     {
                         "type": "label",
-                        "label": "Eye color can be a <a href='https://github.com/MycroftAI/mycroft-mark-1/blob/master/dialog/en-us/colors.value'>color name</a>, RGB triple, or hex color code.  <P>Examples:<ul><li>Green</li><li>(34, 167, 240)</li><li>#019FDE</li></ul>"
+                        "label": "Eye color can be a <a href='https://github.com/MycroftAI/mycroft-mark-1/blob/master/dialog/en-us/colors.value'>color name</a>, such as 'default' or 'deep pink'; an RGB triple like '(34, 167, 240)'; or a hex color code like '#22A7F0'"
                     },
                     {
                         "name": "eye color",
                         "type": "text",
                         "label": "Eye Color",
-                        "placeholder": "e.g. (34, 167, 240)",
-                        "value": ""
+                        "placeholder": "default",
+                        "value": "default"
+                    },
+                    {
+                        "type": "checkbox",
+                        "name": "auto_dim_eyes",
+                        "label": "Dim when not active",
+                        "value": "false"
+                    }
+                ]
+            },
+            {
+                "name": "Behavior",
+                "fields": [
+                    {
+                        "type": "checkbox",
+                        "name": "use_listening_beep",
+                        "label": "Play beep when listening",
+                        "value": "true"
                     }
                 ]
             }
