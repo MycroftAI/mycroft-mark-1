@@ -20,6 +20,7 @@ from ast import literal_eval as parse_tuple
 from pytz import timezone
 from datetime import datetime, timedelta
 
+from mycroft.messagebus.message import Message
 from mycroft.skills.core import MycroftSkill
 from mycroft.util import connected
 from mycroft.util.log import LOG
@@ -131,6 +132,9 @@ class Mark1(MycroftSkill):
             self.enclosure.mouth_reset()
             self.set_eye_color(self.settings['eye color'], initing=True)
 
+        # Update use of wake-up beep
+        self._sync_wake_beep_setting()
+
         self.settings.set_changed_callback(self.on_websettings_changed)
 
     #####################################################################
@@ -210,7 +214,7 @@ class Mark1(MycroftSkill):
         self.set_eye_color(self.settings['eye color'], speak=False)
 
     #####################################################################
-    # Color interactions
+    # Web settings
 
     def on_websettings_changed(self):
         # Update eye color if necessary
@@ -228,6 +232,28 @@ class Mark1(MycroftSkill):
                 self.idle_count = 0
                 rgb = self._current_color
                 self.enclosure.eyes_color(rgb[0], rgb[1], rgb[2])
+
+        # Update use of wake-up beep
+        self._sync_wake_beep_setting()
+
+    def _sync_wake_beep_setting(self):
+        from mycroft.configuration.config import (
+            LocalConf, USER_CONFIG, Configuration
+        )
+        config = Configuration.get()
+        use_beep = self.settings.get("use_listening_beep") == "true"
+        if not config['confirm_listening'] == use_beep:
+            # Update local (user) configuration setting
+            new_config = {
+                'confirm_listening': use_beep
+            }
+            user_config = LocalConf(USER_CONFIG)
+            user_config.merge(new_config)
+            user_config.store()
+            self.emitter.emit(Message('configuration.updated'))
+
+    #####################################################################
+    # Color interactions
 
     def set_eye_color(self, color=None, rgb=None, speak=True, initing=False):
         """ Change the eye color on the faceplate, update saved setting
