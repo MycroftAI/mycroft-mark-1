@@ -106,6 +106,10 @@ class Mark1(MycroftSkill):
             self.settings['auto_brightness'] = False
         if self.settings.get('eye color') is None:
             self.settings['eye color'] = "default"
+        if self.settings.get('auto_dim_eyes') is None:
+            self.settings['auto_dim_eyes') = 'false'
+        if self.settings.get('use_listenting_beep') is None:
+            self.settings['use_listening_beep') = 'true'
 
         self.brightness_dict = self.translate_namedvalues('brightness.levels')
         self.color_dict = self.translate_namedvalues('colors')
