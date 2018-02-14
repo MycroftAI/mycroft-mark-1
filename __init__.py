@@ -98,6 +98,8 @@ class Mark1(MycroftSkill):
         self._settings_loaded = False
         self.converse_context = None
         self.idle_count = 99
+        self.hourglass_info = {}
+        self.interaction_id = 0
         self._current_color = (34, 167, 240)  # Mycroft blue
 
     def initialize(self):
@@ -124,6 +126,21 @@ class Mark1(MycroftSkill):
             self.add_event('recognizer_loop:record_begin',
                            self.handle_listener_started)
             self.start_idle_check()
+
+            # Handle the 'busy' visual
+            self.emitter.on('mycroft.skill.handler.start',
+                            self.on_handler_started)
+            self.emitter.on('mycroft.skill.handler.complete',
+                            self.on_handler_complete)
+
+            self.emitter.on('recognizer_loop:audio_output_start',
+                            self.on_handler_interactingwithuser)
+            self.emitter.on('enclosure.mouth.think',
+                            self.on_handler_interactingwithuser)
+            self.emitter.on('enclosure.mouth.events.deactivate',
+                            self.on_handler_interactingwithuser)
+            self.emitter.on('enclosure.mouth.text',
+                            self.on_handler_interactingwithuser)
         except:
             pass
 
@@ -140,6 +157,54 @@ class Mark1(MycroftSkill):
         self._sync_wake_beep_setting()
 
         self.settings.set_changed_callback(self.on_websettings_changed)
+
+    def shutdown(self):
+        # Gotta clean up manually since not using add_event()
+        self.emitter.remove('mycroft.skill.handler.start',
+                            self.on_handler_started)
+        self.emitter.remove('mycroft.skill.handler.complete',
+                            self.on_handler_complete)
+        self.emitter.remove('recognizer_loop:audio_output_start',
+                            self.on_handler_interactingwithuser)
+        self.emitter.remove('enclosure.mouth.think',
+                            self.on_handler_interactingwithuser)
+        self.emitter.remove('enclosure.mouth.events.deactivate',
+                            self.on_handler_interactingwithuser)
+        self.emitter.remove('enclosure.mouth.text',
+                            self.on_handler_interactingwithuser)
+        super(Mark1, self).shutdown()
+
+    #####################################################################
+    # Manage "busy" visual
+
+    def on_handler_started(self, message):
+        if "Mark1" in message.data["handler"]:
+            return
+        if "update_display" in message.data["handler"]:
+            return
+
+        self.hourglass_info[message.data["handler"]] = self.interaction_id
+        time.sleep(0.25)
+        if self.hourglass_info[message.data["handler"]] == self.interaction_id:
+            # Nothing has happend to indicate to the user that we are active,
+            # so start a thinking interaction
+            self.hourglass_info[message.data["handler"]] = -1
+            self.enclosure.mouth_think()
+
+    def on_handler_interactingwithuser(self, message):
+        # Every time we do something that the user would notice, increment
+        # an interaction counter.
+        self.interaction_id += 1
+
+    def on_handler_complete(self, message):
+        if "Mark1" in message.data["handler"]:
+            return
+        if "update_display" in message.data["handler"]:
+            return
+
+        if self.hourglass_info[message.data["handler"]] == -1:
+            self.enclosure.reset()
+        del self.hourglass_info[message.data["handler"]]
 
     #####################################################################
     # Manage "idle" visual state
