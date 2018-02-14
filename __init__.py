@@ -109,9 +109,9 @@ class Mark1(MycroftSkill):
         if self.settings.get('eye color') is None:
             self.settings['eye color'] = "default"
         if self.settings.get('auto_dim_eyes') is None:
-            self.settings['auto_dim_eyes') = 'false'
+            self.settings['auto_dim_eyes'] = 'false'
         if self.settings.get('use_listenting_beep') is None:
-            self.settings['use_listening_beep') = 'true'
+            self.settings['use_listening_beep'] = 'true'
 
         self.brightness_dict = self.translate_namedvalues('brightness.levels')
         self.color_dict = self.translate_namedvalues('colors')
@@ -202,9 +202,16 @@ class Mark1(MycroftSkill):
         if "update_display" in message.data["handler"]:
             return
 
-        if self.hourglass_info[message.data["handler"]] == -1:
-            self.enclosure.reset()
-        del self.hourglass_info[message.data["handler"]]
+        try:
+            if self.hourglass_info[message.data["handler"]] == -1:
+                self.enclosure.reset()
+            del self.hourglass_info[message.data["handler"]]
+        except:
+            # There is a slim chance the self.hourglass_info might not
+            # be populated if this skill reloads at just the right time
+            # so that it misses the mycroft.skill.handler.start but
+            # catches the mycroft.skill.handler.complete
+            pass
 
     #####################################################################
     # Manage "idle" visual state
