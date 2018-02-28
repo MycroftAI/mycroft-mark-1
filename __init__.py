@@ -247,10 +247,10 @@ class Mark1(MycroftSkill):
             self.idle_count += 1
             try:
                 # Found the built-in API for setpixel (introduced in 0.9.17)
-                f = self.enclosure.eyes_setpixel
+                setpixel = self.enclosure.eyes_setpixel
             except:
                 # Use adaptor that writes straight to the serial port
-                f = enclosure_eyes_setpixel
+                setpixel = enclosure_eyes_setpixel
             
             if self.idle_count == 2:
                 # Go into a 'sleep' visual state
@@ -259,29 +259,29 @@ class Mark1(MycroftSkill):
                 # Lower the eyes
                 time.sleep(0.5)  # prevent overwriting of eye down animation
                 rgb = self._current_color
-                f(3, r=rgb[0], g=rgb[1], b=rgb[2])
-                f(8, r=rgb[0], g=rgb[1], b=rgb[2])
-                f(15, r=rgb[0], g=rgb[1], b=rgb[2])
-                f(20, r=rgb[0], g=rgb[1], b=rgb[2])
+                setpixel(3, r=rgb[0], g=rgb[1], b=rgb[2])
+                setpixel(8, r=rgb[0], g=rgb[1], b=rgb[2])
+                setpixel(15, r=rgb[0], g=rgb[1], b=rgb[2])
+                setpixel(20, r=rgb[0], g=rgb[1], b=rgb[2])
             elif self.idle_count > 2:
                 self.cancel_scheduled_event('IdleCheck')
 
                 # Go into an 'inattentive' visual state
                 rgb = self._darker_color(self._current_color, 0.5)
                 for idx in range(0, 3):
-                    f(idx, r=0, g=0, b=0)
+                    setpixel(idx, r=0, g=0, b=0)
                     time.sleep(0.05)  # hack to prevent serial port overflow
                 for idx in range(3, 9):
-                    f(idx, r=rgb[0], g=rgb[1], b=rgb[2])
+                    setpixel(idx, r=rgb[0], g=rgb[1], b=rgb[2])
                     time.sleep(0.05)  # hack to prevent serial port overflow
                 for idx in range(9, 15):
-                    f(idx, r=0, g=0, b=0)
+                    setpixel(idx, r=0, g=0, b=0)
                     time.sleep(0.05)  # hack to prevent serial port overflow
                 for idx in range(15, 21):
-                    f(idx, r=rgb[0], g=rgb[1], b=rgb[2])
+                    setpixel(idx, r=rgb[0], g=rgb[1], b=rgb[2])
                     time.sleep(0.05)  # hack to prevent serial port overflow
                 for idx in range(21, 24):
-                    f(idx, r=0, g=0, b=0)
+                    setpixel(idx, r=0, g=0, b=0)
                     time.sleep(0.05)  # hack to prevent serial port overflow
         else:
             self.idle_count = 0
