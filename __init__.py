@@ -31,6 +31,9 @@ import mycroft.client.enclosure.display_manager as DisplayManager
 
 
 # TODO: Move this to the EnclosureAPI.eyes_setpixel()
+from mycroft.version import check_version
+
+
 def enclosure_eyes_setpixel(neopixel_idx, r=255, g=255, b=255):
     """Set individual pixels on the Mark 1 neopixel display
 
@@ -141,22 +144,28 @@ class Mark1(MycroftSkill):
                             self.on_handler_interactingwithuser)
             self.emitter.on('enclosure.mouth.text',
                             self.on_handler_interactingwithuser)
-        except:
-            pass
+
+            self.emitter.on('mycroft.skills.initialized', self.reset_face)
+        except Exception:
+            LOG.exception('In Mark 1 Skill')
 
         # TODO: Add MycroftSkill.register_entity_list() and use the
         #  self.color_dict.keys() instead of duplicating data
         self.register_entity_file('color.entity')
 
-        if connected():
-            # Connected at startup: setting eye color
-            self.enclosure.mouth_reset()
-            self.set_eye_color(self.settings['eye color'], initing=True)
+        if not check_version('0.9.18'):
+            self.emitter.emit(Message('mycroft.skills.initialized'))
 
         # Update use of wake-up beep
         self._sync_wake_beep_setting()
 
         self.settings.set_changed_callback(self.on_websettings_changed)
+
+    def reset_face(self, message):
+        if connected():
+            # Connected at startup: setting eye color
+            self.enclosure.mouth_reset()
+            self.set_eye_color(self.settings['eye color'], initing=True)
 
     def shutdown(self):
         # Gotta clean up manually since not using add_event()
