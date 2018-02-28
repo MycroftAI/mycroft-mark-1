@@ -233,11 +233,7 @@ class Mark1(MycroftSkill):
 
         if self.settings['auto_dim_eyes'] == "true":
             # Schedule a check every few seconds
-            now = datetime.now()
-            callback_time = (datetime(now.year, now.month, now.day,
-                                      now.hour, now.minute) +
-                             timedelta(seconds=Mark1.IDLE_CHECK_FREQUENCY))
-            self.schedule_repeating_event(self.check_for_idle, callback_time,
+            self.schedule_repeating_event(self.check_for_idle, None,
                                           Mark1.IDLE_CHECK_FREQUENCY,
                                           name='IdleCheck')
 
@@ -249,27 +245,44 @@ class Mark1(MycroftSkill):
         if DisplayManager.get_active() == '':
             # No activity, start to fall asleep
             self.idle_count += 1
+            try:
+                # Found the built-in API for setpixel (introduced in 0.9.17)
+                f = self.enclosure.eyes_setpixel
+            except:
+                # Use adaptor that writes straight to the serial port
+                f = enclosure_eyes_setpixel
+            
             if self.idle_count == 2:
                 # Go into a 'sleep' visual state
                 self.enclosure.eyes_look('d')
 
                 # Lower the eyes
-                time.sleep(0.5)
+                time.sleep(0.5)  # prevent overwriting of eye down animation
                 rgb = self._current_color
-                enclosure_eyes_setpixel(3, r=rgb[0], g=rgb[1], b=rgb[2])
-                enclosure_eyes_setpixel(8, r=rgb[0], g=rgb[1], b=rgb[2])
-                enclosure_eyes_setpixel(15, r=rgb[0], g=rgb[1], b=rgb[2])
-                enclosure_eyes_setpixel(20, r=rgb[0], g=rgb[1], b=rgb[2])
+                f(3, r=rgb[0], g=rgb[1], b=rgb[2])
+                f(8, r=rgb[0], g=rgb[1], b=rgb[2])
+                f(15, r=rgb[0], g=rgb[1], b=rgb[2])
+                f(20, r=rgb[0], g=rgb[1], b=rgb[2])
             elif self.idle_count > 2:
                 self.cancel_scheduled_event('IdleCheck')
 
                 # Go into an 'inattentive' visual state
                 rgb = self._darker_color(self._current_color, 0.5)
+                for idx in range(0, 3):
+                    f(idx, r=0, g=0, b=0)
+                    time.sleep(0.05)  # hack to prevent serial port overflow
                 for idx in range(3, 9):
-                    enclosure_eyes_setpixel(idx, r=rgb[0], g=rgb[1], b=rgb[2])
+                    f(idx, r=rgb[0], g=rgb[1], b=rgb[2])
+                    time.sleep(0.05)  # hack to prevent serial port overflow
+                for idx in range(9, 15):
+                    f(idx, r=0, g=0, b=0)
+                    time.sleep(0.05)  # hack to prevent serial port overflow
                 for idx in range(15, 21):
-                    enclosure_eyes_setpixel(idx, r=rgb[0], g=rgb[1], b=rgb[2])
-
+                    f(idx, r=rgb[0], g=rgb[1], b=rgb[2])
+                    time.sleep(0.05)  # hack to prevent serial port overflow
+                for idx in range(21, 24):
+                    f(idx, r=0, g=0, b=0)
+                    time.sleep(0.05)  # hack to prevent serial port overflow
         else:
             self.idle_count = 0
 
