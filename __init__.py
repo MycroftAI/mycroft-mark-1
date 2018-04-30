@@ -187,18 +187,19 @@ class Mark1(MycroftSkill):
     # Manage "busy" visual
 
     def on_handler_started(self, message):
+        handler = message.data.get("handler", "")
         # Ignoring handlers from this skill and from the background clock
-        if "Mark1" in message.data["handler"]:
+        if "Mark1" in handler:
             return
-        if "TimeSkill.update_display" in message.data["handler"]:
+        if "TimeSkill.update_display" in handler:
             return
 
-        self.hourglass_info[message.data["handler"]] = self.interaction_id
+        self.hourglass_info[handler] = self.interaction_id
         time.sleep(0.25)
-        if self.hourglass_info[message.data["handler"]] == self.interaction_id:
+        if self.hourglass_info[handler] == self.interaction_id:
             # Nothing has happend to indicate to the user that we are active,
             # so start a thinking interaction
-            self.hourglass_info[message.data["handler"]] = -1
+            self.hourglass_info[handler] = -1
             self.enclosure.mouth_think()
 
     def on_handler_interactingwithuser(self, message):
@@ -207,16 +208,17 @@ class Mark1(MycroftSkill):
         self.interaction_id += 1
 
     def on_handler_complete(self, message):
+        handler = message.data.get("handler", "")
         # Ignoring handlers from this skill and from the background clock
-        if "Mark1" in message.data["handler"]:
+        if "Mark1" in handler:
             return
-        if "TimeSkill.update_display" in message.data["handler"]:
+        if "TimeSkill.update_display" in handler:
             return
 
         try:
-            if self.hourglass_info[message.data["handler"]] == -1:
+            if self.hourglass_info[handler] == -1:
                 self.enclosure.reset()
-            del self.hourglass_info[message.data["handler"]]
+            del self.hourglass_info[handler]
         except:
             # There is a slim chance the self.hourglass_info might not
             # be populated if this skill reloads at just the right time
