@@ -80,7 +80,7 @@ def fuzzy_match_color(color_a, color_dict):
     """
     highest_ratio = float("-inf")
     _color = None
-    for color, value in color_dict.iteritems():
+    for color, value in color_dict.items():
         s = SequenceMatcher(None, color_a, color)
         if s.ratio() > highest_ratio:
             highest_ratio = s.ratio()
