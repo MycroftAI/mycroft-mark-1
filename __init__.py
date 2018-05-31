@@ -290,9 +290,9 @@ class Mark1(MycroftSkill):
 
     def _darker_color(self, rgb):
         r, g, b = rgb
-        darker_r = int(r) / 2
-        darker_g = int(g) / 2
-        darker_b = int(b) / 2
+        darker_r = int(r) // 2
+        darker_g = int(g) // 2
+        darker_b = int(b) // 2
 
         return darker_r, darker_g, darker_b
 
