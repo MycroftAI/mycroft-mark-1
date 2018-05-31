@@ -269,7 +269,7 @@ class Mark1(MycroftSkill):
                 self.cancel_scheduled_event('IdleCheck')
 
                 # Go into an 'inattentive' visual state
-                rgb = self._darker_color(self._current_color, 0.5)
+                rgb = self._darker_color(self._current_color)
                 for idx in range(0, 3):
                     setpixel(idx, r=0, g=0, b=0)
                     time.sleep(0.05)  # hack to prevent serial port overflow
@@ -288,9 +288,13 @@ class Mark1(MycroftSkill):
         else:
             self.idle_count = 0
 
-    def _darker_color(self, rgb, factor):
-        (r, g, b) = rgb
-        return (int(r*factor), int(g*factor), int(b*factor))
+    def _darker_color(self, rgb):
+        r, g, b = rgb
+        darker_r = int(r) // 2
+        darker_g = int(g) // 2
+        darker_b = int(b) // 2
+
+        return darker_r, darker_g, darker_b
 
     def handle_listener_started(self, message):
         if not self.settings['auto_dim_eyes'] == "true":
