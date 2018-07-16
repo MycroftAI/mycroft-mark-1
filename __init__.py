@@ -633,7 +633,7 @@ class Mark1(MycroftSkill):
         self.auto_brightness = True
         auto_time = self._get_auto_time()
         nearest_time_to_now = (float('inf'), None, None)
-        for time_of_day, pair in auto_time.iteritems():
+        for time_of_day, pair in auto_time.items():
             self.schedule_brightness(time_of_day, pair)
             now = arrow.now().timestamp
             t = arrow.get(pair[0]).timestamp
