@@ -131,21 +131,21 @@ class Mark1(MycroftSkill):
             self.start_idle_check()
 
             # Handle the 'busy' visual
-            self.emitter.on('mycroft.skill.handler.start',
-                            self.on_handler_started)
-            self.emitter.on('mycroft.skill.handler.complete',
-                            self.on_handler_complete)
+            self.bus.on('mycroft.skill.handler.start',
+                        self.on_handler_started)
+            self.bus.on('mycroft.skill.handler.complete',
+                        self.on_handler_complete)
 
-            self.emitter.on('recognizer_loop:audio_output_start',
-                            self.on_handler_interactingwithuser)
-            self.emitter.on('enclosure.mouth.think',
-                            self.on_handler_interactingwithuser)
-            self.emitter.on('enclosure.mouth.events.deactivate',
-                            self.on_handler_interactingwithuser)
-            self.emitter.on('enclosure.mouth.text',
-                            self.on_handler_interactingwithuser)
+            self.bus.on('recognizer_loop:audio_output_start',
+                        self.on_handler_interactingwithuser)
+            self.bus.on('enclosure.mouth.think',
+                        self.on_handler_interactingwithuser)
+            self.bus.on('enclosure.mouth.events.deactivate',
+                        self.on_handler_interactingwithuser)
+            self.bus.on('enclosure.mouth.text',
+                        self.on_handler_interactingwithuser)
 
-            self.emitter.on('mycroft.skills.initialized', self.reset_face)
+            self.bus.on('mycroft.skills.initialized', self.reset_face)
         except Exception:
             LOG.exception('In Mark 1 Skill')
 
@@ -154,7 +154,7 @@ class Mark1(MycroftSkill):
         self.register_entity_file('color.entity')
 
         if not check_version('0.9.18'):
-            self.emitter.emit(Message('mycroft.skills.initialized'))
+            self.bus.emit(Message('mycroft.skills.initialized'))
 
         # Update use of wake-up beep
         self._sync_wake_beep_setting()
@@ -169,18 +169,18 @@ class Mark1(MycroftSkill):
 
     def shutdown(self):
         # Gotta clean up manually since not using add_event()
-        self.emitter.remove('mycroft.skill.handler.start',
-                            self.on_handler_started)
-        self.emitter.remove('mycroft.skill.handler.complete',
-                            self.on_handler_complete)
-        self.emitter.remove('recognizer_loop:audio_output_start',
-                            self.on_handler_interactingwithuser)
-        self.emitter.remove('enclosure.mouth.think',
-                            self.on_handler_interactingwithuser)
-        self.emitter.remove('enclosure.mouth.events.deactivate',
-                            self.on_handler_interactingwithuser)
-        self.emitter.remove('enclosure.mouth.text',
-                            self.on_handler_interactingwithuser)
+        self.bus.remove('mycroft.skill.handler.start',
+                        self.on_handler_started)
+        self.bus.remove('mycroft.skill.handler.complete',
+                        self.on_handler_complete)
+        self.bus.remove('recognizer_loop:audio_output_start',
+                        self.on_handler_interactingwithuser)
+        self.bus.remove('enclosure.mouth.think',
+                        self.on_handler_interactingwithuser)
+        self.bus.remove('enclosure.mouth.events.deactivate',
+                        self.on_handler_interactingwithuser)
+        self.bus.remove('enclosure.mouth.text',
+                        self.on_handler_interactingwithuser)
         super(Mark1, self).shutdown()
 
     #####################################################################
@@ -356,7 +356,7 @@ class Mark1(MycroftSkill):
             user_config = LocalConf(USER_CONFIG)
             user_config.merge(new_config)
             user_config.store()
-            self.emitter.emit(Message('configuration.updated'))
+            self.bus.emit(Message('configuration.updated'))
 
     #####################################################################
     # Color interactions
