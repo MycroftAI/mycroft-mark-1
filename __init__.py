@@ -112,9 +112,9 @@ class Mark1(MycroftSkill):
         if self.settings.get('eye color') is None:
             self.settings['eye color'] = "default"
         if self.settings.get('auto_dim_eyes') is None:
-            self.settings['auto_dim_eyes'] = 'false'
+            self.settings['auto_dim_eyes'] = True
         if self.settings.get('use_listenting_beep') is None:
-            self.settings['use_listening_beep'] = 'true'
+            self.settings['use_listening_beep'] = True
 
         self.brightness_dict = self.translate_namedvalues('brightness.levels')
         self.color_dict = self.translate_namedvalues('colors')
@@ -233,14 +233,14 @@ class Mark1(MycroftSkill):
         # Clear any existing checker
         self.cancel_scheduled_event('IdleCheck')
 
-        if self.settings['auto_dim_eyes'] == "true":
+        if self.settings['auto_dim_eyes']:
             # Schedule a check every few seconds
             self.schedule_repeating_event(self.check_for_idle, None,
                                           Mark1.IDLE_CHECK_FREQUENCY,
                                           name='IdleCheck')
 
     def check_for_idle(self):
-        if not self.settings['auto_dim_eyes'] == "true":
+        if not self.settings['auto_dim_eyes']:
             self.cancel_scheduled_event('IdleCheck')
             return
 
@@ -297,7 +297,7 @@ class Mark1(MycroftSkill):
         return darker_r, darker_g, darker_b
 
     def handle_listener_started(self, message):
-        if not self.settings['auto_dim_eyes'] == "true":
+        if not self.settings['auto_dim_eyes']:
             self.cancel_scheduled_event('IdleCheck')
             return
 
@@ -329,7 +329,7 @@ class Mark1(MycroftSkill):
             self.set_eye_color(color=_color, speak=False)
 
         # Update eye state if auto_dim_eyes changes...
-        if self.settings.get("auto_dim_eyes") == "true":
+        if self.settings.get("auto_dim_eyes"):
             self.start_idle_check()
         else:
             # No longer dimming, show open eyes if closed...
@@ -347,7 +347,7 @@ class Mark1(MycroftSkill):
             LocalConf, USER_CONFIG, Configuration
         )
         config = Configuration.get()
-        use_beep = self.settings.get("use_listening_beep") == "true"
+        use_beep = self.settings.get("use_listening_beep") is True
         if not config['confirm_listening'] == use_beep:
             # Update local (user) configuration setting
             new_config = {
