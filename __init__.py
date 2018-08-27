@@ -27,7 +27,6 @@ from mycroft.util.log import LOG
 from mycroft.util.parse import normalize
 from mycroft.audio import wait_while_speaking
 from mycroft import intent_file_handler
-import mycroft.client.enclosure.display_manager as DisplayManager
 
 
 # TODO: Move this to the EnclosureAPI.eyes_setpixel()
@@ -244,7 +243,7 @@ class Mark1(MycroftSkill):
             self.cancel_scheduled_event('IdleCheck')
             return
 
-        if DisplayManager.get_active() == '':
+        if self.enclosure.display_manager.get_active() == '':
             # No activity, start to fall asleep
             self.idle_count += 1
             try:
