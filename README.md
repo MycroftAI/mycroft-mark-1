@@ -2,7 +2,7 @@
 Customize your Mark 1
 
 ## About 
-The Mycroft Mark 1 has several unique capabilities which this Skill lets you to control.
+The Mycroft Mark 1 has several unique capabilities which this Skill lets you control.
 
 ### Eye Color
 The Mark 1 has beautiful eyes -- and you get to pick their color!  Set them to
@@ -17,7 +17,7 @@ its brightness level to dim at night.
 ## Examples 
 * "Set your eye color to pink"
 * "Change your eye color to the default"
-* "Set a custom eye color (you'll be prompted for values)"
+* "Set a custom eye color" (you'll be prompted for values)
 * "Turn on auto brightness"
 * "Change to low brightness"
 * "Dim to 50%"
