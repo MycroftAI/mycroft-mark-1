@@ -29,27 +29,6 @@ from mycroft.audio import wait_while_speaking
 from mycroft import intent_file_handler
 
 
-# TODO: Move this to the EnclosureAPI.eyes_setpixel()
-from mycroft.version import check_version
-
-
-def enclosure_eyes_setpixel(neopixel_idx, r=255, g=255, b=255):
-    """Set individual pixels on the Mark 1 neopixel display
-
-    Args:
-        neopixel_idx (int): 0-11 for the right eye, 12-23 for the left
-        r (int): The red value to apply
-        g (int): The green value to apply
-        b (int): The blue value to apply
-    """
-    import subprocess
-
-    color = (int(r) * 65536) + (int(g) * 256) + int(b)
-    subprocess.call('echo "eyes.set=' + str(int(neopixel_idx)) +
-                    ',' + str(color) + '" > /dev/ttyAMA0', shell=True)
-    time.sleep(0.01)  # hack to prevent overload of the serial port
-
-
 def _hex_to_rgb(_hex):
     """ Convert hex color code to RGB tuple
     Args:
@@ -104,25 +83,26 @@ class Mark1(MycroftSkill):
         self.interaction_id = 0
         self._current_color = (34, 167, 240)  # Mycroft blue
 
+        self.settings['auto_brightness'] = False
+        self.settings['auto_dim_eyes'] = True
+        self.settings['use_listening_beep'] = True
+        self.settings['eye color'] = "default"
+        self.settings['current_eye_color'] = self.settings['eye color']
+
     def initialize(self):
         # Initialize...
-        if self.settings.get('auto_brightness') is None:
-            self.settings['auto_brightness'] = False
-        if self.settings.get('eye color') is None:
-            self.settings['eye color'] = "default"
-        if self.settings.get('auto_dim_eyes') is None:
-            self.settings['auto_dim_eyes'] = True
-        if self.settings.get('use_listenting_beep') is None:
-            self.settings['use_listening_beep'] = True
-
         self.brightness_dict = self.translate_namedvalues('brightness.levels')
         self.color_dict = self.translate_namedvalues('colors')
+        self.settings['web eye color'] = self.settings['eye color']
 
         try:
             # Handle changing the eye color once Mark 1 is ready to go
             # (Part of the statup sequence)
             self.add_event('mycroft.internet.connected',
                            self.handle_internet_connected)
+
+            self.add_event('mycroft.eyes.default',
+                           self.handle_default_eyes)
 
             # Handle the 'waking' visual
             self.add_event('recognizer_loop:record_begin',
@@ -152,9 +132,6 @@ class Mark1(MycroftSkill):
         #  self.color_dict.keys() instead of duplicating data
         self.register_entity_file('color.entity')
 
-        if not check_version('0.9.18'):
-            self.bus.emit(Message('mycroft.skills.initialized'))
-
         # Update use of wake-up beep
         self._sync_wake_beep_setting()
 
@@ -164,7 +141,7 @@ class Mark1(MycroftSkill):
         if connected():
             # Connected at startup: setting eye color
             self.enclosure.mouth_reset()
-            self.set_eye_color(self.settings['eye color'], initing=True)
+            self.set_eye_color(self.settings['current_eye_color'], initing=True)
 
     def shutdown(self):
         # Gotta clean up manually since not using add_event()
@@ -246,13 +223,7 @@ class Mark1(MycroftSkill):
         if self.enclosure.display_manager.get_active() == '':
             # No activity, start to fall asleep
             self.idle_count += 1
-            try:
-                # Found the built-in API for setpixel (introduced in 0.9.17)
-                setpixel = self.enclosure.eyes_setpixel
-            except:
-                # Use adaptor that writes straight to the serial port
-                setpixel = enclosure_eyes_setpixel
-            
+
             if self.idle_count == 2:
                 # Go into a 'sleep' visual state
                 self.enclosure.eyes_look('d')
@@ -260,29 +231,31 @@ class Mark1(MycroftSkill):
                 # Lower the eyes
                 time.sleep(0.5)  # prevent overwriting of eye down animation
                 rgb = self._current_color
-                setpixel(3, r=rgb[0], g=rgb[1], b=rgb[2])
-                setpixel(8, r=rgb[0], g=rgb[1], b=rgb[2])
-                setpixel(15, r=rgb[0], g=rgb[1], b=rgb[2])
-                setpixel(20, r=rgb[0], g=rgb[1], b=rgb[2])
+                self.enclosure.eyes_setpixel(3, r=rgb[0], g=rgb[1], b=rgb[2])
+                self.enclosure.eyes_setpixel(8, r=rgb[0], g=rgb[1], b=rgb[2])
+                self.enclosure.eyes_setpixel(15, r=rgb[0], g=rgb[1], b=rgb[2])
+                self.enclosure.eyes_setpixel(20, r=rgb[0], g=rgb[1], b=rgb[2])
             elif self.idle_count > 2:
                 self.cancel_scheduled_event('IdleCheck')
 
                 # Go into an 'inattentive' visual state
                 rgb = self._darker_color(self._current_color)
                 for idx in range(0, 3):
-                    setpixel(idx, r=0, g=0, b=0)
+                    self.enclosure.eyes_setpixel(idx, r=0, g=0, b=0)
                     time.sleep(0.05)  # hack to prevent serial port overflow
                 for idx in range(3, 9):
-                    setpixel(idx, r=rgb[0], g=rgb[1], b=rgb[2])
+                    self.enclosure.eyes_setpixel(idx,
+                                                 r=rgb[0], g=rgb[1], b=rgb[2])
                     time.sleep(0.05)  # hack to prevent serial port overflow
                 for idx in range(9, 15):
-                    setpixel(idx, r=0, g=0, b=0)
+                    self.enclosure.eyes_setpixel(idx, r=0, g=0, b=0)
                     time.sleep(0.05)  # hack to prevent serial port overflow
                 for idx in range(15, 21):
-                    setpixel(idx, r=rgb[0], g=rgb[1], b=rgb[2])
+                    self.enclosure.eyes_setpixel(idx,
+                                                 r=rgb[0], g=rgb[1], b=rgb[2])
                     time.sleep(0.05)  # hack to prevent serial port overflow
                 for idx in range(21, 24):
-                    setpixel(idx, r=0, g=0, b=0)
+                    self.enclosure.eyes_setpixel(idx, r=0, g=0, b=0)
                     time.sleep(0.05)  # hack to prevent serial port overflow
         else:
             self.idle_count = 0
@@ -316,7 +289,13 @@ class Mark1(MycroftSkill):
     def handle_internet_connected(self, message):
         # System came online later after booting
         self.enclosure.mouth_reset()
-        self.set_eye_color(self.settings['eye color'], speak=False)
+        self.set_eye_color(self.settings['current_eye_color'], speak=False)
+
+    #####################################################################
+    # Reset eye appearance
+
+    def handle_default_eyes(self, message):
+        self.set_eye_color(self.settings['current_eye_color'], speak=False)
 
     #####################################################################
     # Web settings
@@ -324,8 +303,14 @@ class Mark1(MycroftSkill):
     def on_websettings_changed(self):
         # Update eye color if necessary
         _color = self.settings.get('eye color')
-        if _color and self._parse_to_rgb(_color) != self._current_color:
-            self.set_eye_color(color=_color, speak=False)
+
+        # TODO: This is a bit of a hack.  The on_web_settings() is being called
+        # much more often than it should, not just when the setting actually
+        # has changed.  This was overriding local eye color changes constantly.
+        if self.settings['web eye color'] != _color:
+            if _color and self._parse_to_rgb(_color):
+                self.set_eye_color(color=_color, speak=False)
+            self.settings['web eye color'] = _color
 
         # Update eye state if auto_dim_eyes changes...
         if self.settings.get("auto_dim_eyes"):
@@ -383,12 +368,12 @@ class Mark1(MycroftSkill):
                 self.speak_dialog('set.color.success')
 
             # Update saved color if necessary
-            _color = self._parse_to_rgb(self.settings.get('eye color'))
+            _color = self._parse_to_rgb(self.settings.get('current_eye_color'))
             if self._current_color != _color:
                 if color is not None:
-                    self.settings['eye color'] = color
+                    self.settings['current_eye_color'] = color
                 else:
-                    self.settings['eye color'] = [r, g, b]
+                    self.settings['current_eye_color'] = [r, g, b]
         except:
             self.log.debug('Bad color code: '+str(color))
             if speak and not initing:
