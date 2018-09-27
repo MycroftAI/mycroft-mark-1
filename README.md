@@ -1,7 +1,7 @@
 # <img src='https://rawgithub.com/FortAwesome/Font-Awesome/master/advanced-options/raw-svg/solid/cog.svg' card_color='#22a7f0' width='50' height='50' style='vertical-align:bottom'/> Mycroft Mark 1
 Customize your Mark 1
 
-## About 
+## About
 The Mycroft Mark 1 has several unique capabilities which this Skill lets you control.
 
 ### Eye Color
@@ -14,7 +14,7 @@ list for more options
 Set the faceplate to a specific brightness, or allow it to automatically adjust
 its brightness level to dim at night.
 
-## Examples 
+## Examples
 * "Set your eye color to pink"
 * "Change your eye color to the default"
 * "Set a custom eye color" (you'll be prompted for values)
@@ -22,7 +22,7 @@ its brightness level to dim at night.
 * "Change to low brightness"
 * "Dim to 50%"
 
-## Credits 
+## Credits
 Mycroft AI (@MycroftAI)
 
 ## Supported Devices 
@@ -35,3 +35,4 @@ platform_mark1
 #mark1
 #configuration
 #settings
+#system
