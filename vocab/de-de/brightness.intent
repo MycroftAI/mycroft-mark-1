@@ -1,13 +1,13 @@
-dimme (die|deine) augen auf {brightness} (prozent|)
-dimme runter auf {brightness} (prozent|)
-reduziere (helligkeit|Beleuchtung) deiner Augen auf {brightness} (prozent|)
-setze (die|) (Hellichkeit|Beleuchtung) (runter|hoch) auf {brightness} (prozent|)
-(erhöhe|senke) (die|) (Hellichkeit|Beleuchtung) auf {brightness} (prozent|)
-erhelle die Augen (ein bischchen|) auf {brightness} (prozent|)
-(ändere|setze|schalte) auf {brightness} (pozent|) (augen|) (Hellichkeit|Beleuchtung)
-(ändere|setze|schalte) (die|deine) (augen|) (Hellichkeit|Beleuchtung) auf {brightness} (percent|)
-(ändere|setze|schalte) (die|deine) (augen|) (Hellichkeit|Beleuchtung) (höhe|)
-bist du (zu|) (hell|dunkel)?
-du bist (zu|) (hell|dunkel)
-errhelle dich
-dimme dich ein bisschen
+dimme (die|deine) Augen auf {brightness} (Prozent|)
+dimme runter auf {brightness} (Prozent|)
+verringere die (Helligkeit|Beleuchtung) deiner Augen auf {brightness} (Prozent|)
+stelle (die|) (Helligkeit|Beleuchtung) (runter|rauf) auf {brightness} (Prozent|)
+drehe (die|) (Helligkeit|Beleuchtung) (runter|rauf) auf {brightness} (Prozent|)
+(ein wenig|) heller auf {brightness} (Prozent|)
+(ändere|setze|wechsele) die (Augen|) (Helligkeit|Beleuchtung) auf {brightness} (Prozent|)
+(ändere|setze|wechsele) (die|deine) (Augen|) (Helligkeit|Beleuchtung) (Stufe|) auf {brightness} (Prozent|)
+(ändere|setze|wechsele) (die|deine) (Augen|) (Helligkeit|Beleuchtung) (Stufe|)
+Du bist (zu|) (hell|dunkel)
+Du bist (zu|) (hell|dunkel)
+etwas heller
+etwas dunkler
