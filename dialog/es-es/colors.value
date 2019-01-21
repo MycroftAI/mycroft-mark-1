@@ -64,7 +64,7 @@ marfil,#FFFFF0
 caqui,#F0E68C
 lavanda,#E6E6FA
 lavanda rojizo,#FFF0F5
-verde jardin,#7CFC00
+verde jardín,#7CFC00
 chiffon amarillo,#FFFACD
 azul claro,#ADD8E6
 coral claro,#F08080
@@ -85,16 +85,16 @@ lima,#00FF00
 verde lima,#32CD32
 lino,#FAF0E6
 magenta,#FF00FF
-marron,#800000
+marrón,#800000
 aguamarina intermedio,#66CDAA
 azul intermedio,#0000CD
-orquidea intermedio,#BA55D3
-purpura intermedio,#9370DB
+orquídea intermedio,#BA55D3
+púrpura intermedio,#9370DB
 verde marino intermedio,#3CB371
 azul pizarra intermedio,#7B68EE
-verde jardin intermedio,#00FA9A
+verde jardín intermedio,#00FA9A
 turquesa intermedio,#48D1CC
-rojo violaceo intermedio,#C71585
+rojo violáceo intermedio,#C71585
 Azúl medianoche,#191970
 Crema,#F5FFFA
 Rosa brumosa,#FFE4E1
@@ -106,23 +106,23 @@ verde oliva,#808000
 olive drab,#6B8E23
 naranja,#FFA500
 rojo anaranjado,#FF4500
-orquidea,#DA70D6
+orquídea,#DA70D6
 dorado claro,#EEE8AA
 verde claro,#98FB98
-turquesa palido, #AFEEEE
-rojo violaceo palido,#DB7093
+turquesa pálido, #AFEEEE
+rojo violáceo pálido,#DB7093
 papaya,#FFEFD5
 durazno,#FFDAB9
 peru,#CD853F
 rosa,#FFC0CB
 plum,#DDA0DD
-azul palido,#B0E0E6
+azul pálido,#B0E0E6
 Púrpura,#800080
 Rebeca púrpura,#663399
 Rojo,#FF0000
 marrón rosaceo,#BC8F8F
 azul real,#4169E1
-marron cuero,#8B4513
+marrón cuero,#8B4513
 salmón,#FA8072
 marrón arenoso,#F4A460
 verde marino,#2E8B57
