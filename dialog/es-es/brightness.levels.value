@@ -1,9 +1,9 @@
 # nombre, porcentaje
-# nota: agregar al vocab/xx-xx/brightness.entity, tambien
-maximo, 100
+# nota: Añade al vocab/xx-xx/brightness.entity, también
+máximo, 100
 brillante,75
 medio,50
 brillo bajo,25
 bajo,10
 auto,-1
-automatico,-1
+automático,-1
