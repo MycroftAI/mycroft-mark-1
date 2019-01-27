@@ -1,0 +1,9 @@
+# name, percentage
+# NOTE: Add to vocab/xx-xx/brightness.entity, also
+massimo,100
+brillante,75
+metà,50
+bassa luminosità, 25
+bassa,10
+auto,-1
+automatico,-1
