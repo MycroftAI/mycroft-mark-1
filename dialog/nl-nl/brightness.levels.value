@@ -1,0 +1,9 @@
+# naam, procent
+# NOTEER: Voeg toe aan vocab/xx-xx/helderheid.entity, ook
+vol,100
+helder,75
+half,50
+dim,25
+laag,10
+auto,-1
+automatisch,-1
