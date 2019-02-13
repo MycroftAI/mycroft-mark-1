@@ -1,0 +1,15 @@
+
+# (change|set) (the|your|) (eye|eyes) (color|colors|) to {color}
+(ændre | set | skift) ( din |) (øjen | øjne) (farve | farver |) til {farve}
+# (change|set) (eye|eyes) (color|colors|) to {color}
+(ændre | sæt | skift) (øje | øjne) (farve | farver |) til {farve}
+# (change|set) eye (color|colors) to something {color}
+(ændre | sæt | skift) øje (farve | farver) til noget {farve}
+# (change|set) (your|) eyes to (a|an|) {color} (color|)
+(ændre | sæt | skift) (dine |) øjne til (en) {farve} (farve |)
+# (change|set) eyes to some {color} color
+(ændre | sæt | skift) øjne til noget {farve} farver
+# (change|set) (eye|eyes) to (a|an) {color} color
+(ændre | sæt | skift) (øje | øjne) til (en) {farve} farve
+# (change|set) eye (color|colors)
+(ændre | sæt | skift) øjen (farve | farver)
