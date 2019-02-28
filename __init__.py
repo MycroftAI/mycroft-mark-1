@@ -124,7 +124,7 @@ class Mark1(MycroftSkill):
             self.bus.on('enclosure.mouth.text',
                         self.on_handler_interactingwithuser)
 
-            self.bus.on('mycroft.skills.initialized', self.reset_face)
+            self.bus.on('mycroft.ready', self.reset_face)
         except Exception:
             LOG.exception('In Mark 1 Skill')
 
