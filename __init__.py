@@ -138,10 +138,8 @@ class Mark1(MycroftSkill):
         self.settings.set_changed_callback(self.on_websettings_changed)
 
     def reset_face(self, message):
-        if connected():
-            # Connected at startup: setting eye color
-            self.enclosure.mouth_reset()
-            self.set_eye_color(self.settings['current_eye_color'], initing=True)
+        self.enclosure.mouth_reset()
+        self.set_eye_color(self.settings['current_eye_color'], initing=True)
 
     def shutdown(self):
         # Gotta clean up manually since not using add_event()
@@ -211,7 +209,7 @@ class Mark1(MycroftSkill):
 
         if self.settings['auto_dim_eyes']:
             # Schedule a check every few seconds
-            self.schedule_repeating_event(self.check_for_idle, None,
+            self.schedule_repeating_event(self.check_for_idle, 60,
                                           Mark1.IDLE_CHECK_FREQUENCY,
                                           name='IdleCheck')
 
@@ -220,7 +218,7 @@ class Mark1(MycroftSkill):
             self.cancel_scheduled_event('IdleCheck')
             return
 
-        if self.enclosure.display_manager.get_active() == '':
+        if self.enclosure.display_manager.get_active() in ['', Mark1]:
             # No activity, start to fall asleep
             self.idle_count += 1
 
@@ -287,9 +285,10 @@ class Mark1(MycroftSkill):
     # Manage network connction feedback
 
     def handle_internet_connected(self, message):
+        pass
         # System came online later after booting
-        self.enclosure.mouth_reset()
-        self.set_eye_color(self.settings['current_eye_color'], speak=False)
+        #self.enclosure.mouth_reset()
+        #self.set_eye_color(self.settings['current_eye_color'], speak=False)
 
     #####################################################################
     # Reset eye appearance
