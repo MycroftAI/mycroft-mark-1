@@ -1,0 +1,9 @@
+# nome, porcentagem
+# NOTA: Também adicionar ao arquivo vocab/xx-xx/brightness.entity
+máximo,100
+brilhante,75
+médio,50
+fraco,25
+baixo,10
+auto,-1
+automático
