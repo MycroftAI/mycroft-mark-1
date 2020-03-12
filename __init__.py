@@ -18,11 +18,10 @@ import arrow
 from difflib import SequenceMatcher
 from ast import literal_eval as parse_tuple
 from pytz import timezone
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from mycroft.messagebus.message import Message
 from mycroft.skills.core import MycroftSkill
-from mycroft.util import connected
 from mycroft.util.log import LOG
 from mycroft.util.parse import normalize
 from mycroft.audio import wait_while_speaking
@@ -43,7 +42,7 @@ def _hex_to_rgb(_hex):
             return None
         (r, g, b) = int(_hex[0:2], 16), int(_hex[2:4], 16), int(_hex[4:6], 16)
         return (r, g, b)
-    except Exception as e:
+    except Exception:
         return None
 
 
@@ -193,7 +192,7 @@ class Mark1(MycroftSkill):
             if self.hourglass_info[handler] == -1:
                 self.enclosure.reset()
             del self.hourglass_info[handler]
-        except:
+        except Exception:
             # There is a slim chance the self.hourglass_info might not
             # be populated if this skill reloads at just the right time
             # so that it misses the mycroft.skill.handler.start but
@@ -286,9 +285,6 @@ class Mark1(MycroftSkill):
 
     def handle_internet_connected(self, message):
         pass
-        # System came online later after booting
-        #self.enclosure.mouth_reset()
-        #self.set_eye_color(self.settings['current_eye_color'], speak=False)
 
     #####################################################################
     # Reset eye appearance
@@ -373,7 +369,7 @@ class Mark1(MycroftSkill):
                     self.settings['current_eye_color'] = color
                 else:
                     self.settings['current_eye_color'] = [r, g, b]
-        except:
+        except Exception:
             self.log.debug('Bad color code: '+str(color))
             if speak and not initing:
                 self.speak_dialog('error.set.color')
@@ -387,7 +383,7 @@ class Mark1(MycroftSkill):
         def is_byte(utt):
             try:
                 return 0 <= int(utt) <= 255
-            except:
+            except Exception:
                 return False
 
         self.speak_dialog('set.custom.color')
@@ -445,7 +441,7 @@ class Mark1(MycroftSkill):
         try:
             if color.lower() in self.color_dict:
                 return _hex_to_rgb(self.color_dict[color.lower()])
-        except:
+        except Exception:
             pass
 
         # check if rgb tuple like '(0,0,128)'
@@ -455,7 +451,7 @@ class Mark1(MycroftSkill):
                 return (r, g, b)
             else:
                 return None
-        except:
+        except Exception:
             pass
 
         # Finally check if color is hex, like '#0000cc' or '0000cc'
@@ -509,7 +505,7 @@ class Mark1(MycroftSkill):
 
             # Assume plain 31-100 is "percentage"
             return i
-        except:
+        except Exception:
             return None  # failed in an int() conversion
 
     def set_eye_brightness(self, level, speak=True):
