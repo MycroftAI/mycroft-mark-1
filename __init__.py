@@ -169,7 +169,7 @@ class Mark1(MycroftSkill):
 
         self.hourglass_info[handler] = self.interaction_id
         time.sleep(0.25)
-        if self.hourglass_info[handler] == self.interaction_id:
+        if self.hourglass_info.get(handler) == self.interaction_id:
             # Nothing has happend to indicate to the user that we are active,
             # so start a thinking interaction
             self.hourglass_info[handler] = -1
@@ -188,16 +188,10 @@ class Mark1(MycroftSkill):
         if "TimeSkill.update_display" in handler:
             return
 
-        try:
+        if handler in self.hourglass_info:
             if self.hourglass_info[handler] == -1:
                 self.enclosure.reset()
             del self.hourglass_info[handler]
-        except Exception:
-            # There is a slim chance the self.hourglass_info might not
-            # be populated if this skill reloads at just the right time
-            # so that it misses the mycroft.skill.handler.start but
-            # catches the mycroft.skill.handler.complete
-            pass
 
     #####################################################################
     # Manage "idle" visual state
