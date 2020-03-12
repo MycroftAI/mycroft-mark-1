@@ -160,7 +160,7 @@ class Mark1(MycroftSkill):
     # Manage "busy" visual
 
     def on_handler_started(self, message):
-        handler = message.data.get("handler", "")
+        handler = message.data.get("name", "")
         # Ignoring handlers from this skill and from the background clock
         if "Mark1" in handler:
             return
@@ -181,7 +181,7 @@ class Mark1(MycroftSkill):
         self.interaction_id += 1
 
     def on_handler_complete(self, message):
-        handler = message.data.get("handler", "")
+        handler = message.data.get("name", "")
         # Ignoring handlers from this skill and from the background clock
         if "Mark1" in handler:
             return
