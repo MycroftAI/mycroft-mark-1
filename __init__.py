@@ -191,7 +191,7 @@ class Mark1(MycroftSkill):
         if handler in self.hourglass_info:
             if self.hourglass_info[handler] == -1:
                 self.enclosure.reset()
-            del self.hourglass_info[handler]
+            self.hourglass_info[handler] = None
 
     #####################################################################
     # Manage "idle" visual state
