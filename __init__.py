@@ -25,7 +25,7 @@ from mycroft.skills.core import MycroftSkill
 from mycroft.util.log import LOG
 from mycroft.util.parse import normalize
 from mycroft.audio import wait_while_speaking
-from mycroft import intent_file_handler
+from mycroft import intent_handler
 
 
 def _hex_to_rgb(_hex):
@@ -370,7 +370,7 @@ class Mark1(MycroftSkill):
             if initing:
                 self.enclosure.eyes_color(34, 167, 240)  # mycroft blue
 
-    @intent_file_handler('custom.eye.color.intent')
+    @intent_handler('custom.eye.color.intent')
     def handle_custom_eye_color(self, message):
         # Conversational interaction to set a custom eye color
 
@@ -400,7 +400,7 @@ class Mark1(MycroftSkill):
         custom_rgb = [r, g, b]
         self.set_eye_color(rgb=custom_rgb)
 
-    @intent_file_handler('eye.color.intent')
+    @intent_handler('eye.color.intent')
     def handle_eye_color(self, message):
         """ Callback to set eye color from list
 
@@ -526,7 +526,7 @@ class Mark1(MycroftSkill):
             self.auto_brightness = False
             self.set_eye_brightness(self.percent_to_level(percent))
 
-    @intent_file_handler('brightness.intent')
+    @intent_handler('brightness.intent')
     def handle_brightness(self, message):
         """ Intent Callback to set custom eye colors in rgb
 
@@ -600,7 +600,7 @@ class Mark1(MycroftSkill):
 
     # TODO: this is currently set by voice.
     # allow setting from faceplate and web ui
-    @intent_file_handler('brightness.auto.intent')
+    @intent_handler('brightness.auto.intent')
     def handle_auto_brightness(self, message):
         """ brightness varies depending on time of day
 
