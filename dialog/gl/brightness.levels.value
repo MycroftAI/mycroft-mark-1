@@ -1,0 +1,9 @@
+# nome, porcentaxe
+# NOTA: Tamén engadir ao ficheiro vocab/xx-xx/brightness.entity
+cheo,100
+brillante,75
+medio,50
+escurecer,25
+baixo,10
+auto,-1
+automático,-1

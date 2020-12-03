@@ -1,0 +1,9 @@
+# nom, percentatge
+# NOTA: Afegeix-ho a vocab/xx-xx/brightness.entity, també
+ple, 100
+brillant, 75
+meitat,50
+tènue,25
+feble,10
+auto,-1
+automàtic,-1
